@@ -1,130 +1,80 @@
 import { NextResponse } from 'next/server';
+import bcrypt from 'bcryptjs';
 import connectDB from '@/lib/db';
 import User from '@/models/User';
-
-// Helper function to handle errors
-const handleError = (message: string, status: number = 400) => {
-  console.error(`Signup Error (${status}):`, message);
-  return NextResponse.json(
-    { message },
-    { status }
-  );
-};
+import { OTPService } from '@/lib/otp';
 
 export async function POST(request: Request) {
   try {
-    // Parse request body
-    let body;
-    try {
-      body = await request.json();
-    } catch {
-      return handleError('Invalid JSON payload');
-    }
-
-    const { name, email, password, phone, role = 'user' } = body;
+    const { name, email, phone, otp } = await request.json();
 
     // Validate required fields
-    if (!name || !email || !password) {
-      return handleError('Name, email, and password are required');
+    if (!name || !email || !otp) {
+      return NextResponse.json(
+        { success: false, message: 'Name, email, and OTP are required' },
+        { status: 400 }
+      );
     }
 
-    // Validate email format
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(email)) {
-      return handleError('Please enter a valid email address');
-    }
-
-    // Validate password length
-    if (password.length < 6) {
-      return handleError('Password must be at least 6 characters long');
-    }
-
-    try {
-      // Connect to MongoDB
-      await connectDB();
-      console.log('Successfully connected to MongoDB');
-      
-      // Check if user already exists
-      const existingUser = await User.findOne({ email }).select('_id').lean();
-      console.log('Existing user check:', existingUser);
-
-      if (existingUser) {
-        return handleError('User with this email already exists');
-      }
-
-      // Create user (password will be hashed by the pre-save hook)
-      interface UserData {
-        name: string;
-        email: string;
-        password: string;
-        phone?: string;
-        role?: string;
-        employeeId?: string;
-      }
-
-      const userData: UserData = {
-        name: name.trim(),
-        email: email.toLowerCase().trim(),
-        password,
-        phone: phone?.trim(),
-        role,
-      };
-
-      // Only include employeeId if it's provided
-      if (body.employeeId) {
-        userData.employeeId = body.employeeId;
-      }
-
-      console.log('Creating user with data:', { ...userData, password: '[REDACTED]' });
-      
-      const user = await User.create(userData);
-      console.log('User created:', { id: user._id, email: user.email });
-
-      // Return user data without password
-      const userObject = user.toObject();
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      const { password: _, ...userWithoutPassword } = userObject;
-
+    // Verify OTP first
+    const otpVerification = await OTPService.verifyOTP(email, otp);
+    if (!otpVerification.success) {
       return NextResponse.json(
         { 
-          user: userWithoutPassword, 
-          message: 'User created successfully',
-          success: true 
+          success: false, 
+          message: otpVerification.message || 'Invalid or expired OTP',
+          errorCode: 'INVALID_OTP',
+          remainingAttempts: otpVerification.remainingAttempts
         },
-        { status: 201 }
+        { status: 400 }
       );
-    } catch (error: unknown) {
-      const dbError = error as { 
-        code?: number; 
-        keyPattern?: Record<string, unknown>; 
-        keyValue?: Record<string, unknown>;
-        name: string;
-        message: string;
-        errors?: Record<string, { message: string }>;
-        stack?: string;
-      };
-      console.error('Database operation failed:', {
-        name: dbError.name,
-        code: dbError.code,
-        keyPattern: dbError.keyPattern,
-        keyValue: dbError.keyValue,
-        message: dbError.message,
-        stack: dbError.stack
-      });
-      
-      if (dbError.code === 11000) {
-        // Handle duplicate key error
-        const field = Object.keys(dbError.keyPattern || {})[0];
-        return handleError(`${field} already exists`);
-      } else if (dbError.name === 'ValidationError' && dbError.errors) {
-        const errors = Object.values(dbError.errors).map(err => err.message);
-        return handleError(errors.join(', '));
-      }
-      return handleError('Database operation failed: ' + dbError.message, 500);
     }
-  } catch (error) {
-    const err = error as Error;
-    console.error('Unexpected error in signup:', err);
-    return handleError('An unexpected error occurred: ' + err.message, 500);
+
+    await connectDB();
+
+    // Check if user already exists
+    const existingUser = await User.findOne({ email });
+    if (existingUser) {
+      return NextResponse.json(
+        { success: false, message: 'User already exists with this email' },
+        { status: 400 }
+      );
+    }
+
+    // Generate a random password (not needed for login, just for security)
+    const randomPassword = Math.random().toString(36).slice(-12);
+    const hashedPassword = await bcrypt.hash(randomPassword, 10);
+
+    // Create new user
+    const user = new User({
+      name,
+      email,
+      phone: phone || '',
+      password: hashedPassword,
+      emailVerified: new Date(),
+      role: 'user',
+    });
+
+    await user.save();
+
+    // Return user data (excluding password)
+    const userObj = user.toObject();
+    delete userObj.password;
+
+    return NextResponse.json({
+      success: true,
+      message: 'User registered successfully',
+      user: userObj,
+    });
+  } catch (error: any) {
+    console.error('Error in signup:', error);
+    return NextResponse.json(
+      { 
+        success: false, 
+        message: error.message || 'Internal server error',
+        errorCode: 'INTERNAL_SERVER_ERROR'
+      },
+      { status: 500 }
+    );
   }
 }

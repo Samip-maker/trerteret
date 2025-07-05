@@ -33,8 +33,8 @@ declare module 'next-auth/jwt' {
 export const authConfig: NextAuthOptions = {
   debug: process.env.NODE_ENV === 'development',
   pages: {
-    signIn: '/auth/signin',
-    signOut: '/auth/signout',
+    signIn: '/login',
+    signOut: '/',
     error: '/auth/error',
   },
   session: {
@@ -75,19 +75,8 @@ export const authConfig: NextAuthOptions = {
         const urlObj = new URL(url);
         if (urlObj.origin === baseUrl) return url;
         
-        // Default redirect based on user role
-        const urlPath = urlObj.pathname.toLowerCase();
-        const role = urlPath.includes('admin') ? 'admin' : 
-                    urlPath.includes('partner') ? 'partner' : 'user';
-        
-        switch (role) {
-          case 'admin':
-            return `${baseUrl}/admin/dashboard`;
-          case 'partner':
-            return `${baseUrl}/partner/dashboard`;
-          default:
-            return `${baseUrl}/dashboard`;
-        }
+        // Default redirect to dashboard
+        return `${baseUrl}/dashboard`;
       } catch (error) {
         console.error('Error parsing URL:', error);
         return `${baseUrl}/dashboard`;
@@ -118,28 +107,27 @@ export const authConfig: NextAuthOptions = {
       async authorize(credentials: Record<string, string> | undefined) {
         if (!credentials) return null;
         
-        const { email, rememberMe } = credentials;
+        const { email, password, rememberMe } = credentials;
         
         try {
-          // Add your user lookup and password verification logic here
-          // Example:
-          // const user = await findUserByEmail(email);
-          // if (!user || !await verifyPassword(password, user.password)) {
-          //   throw new Error('Invalid credentials');
-          // }
-          // return { id: user.id, email: user.email, role: user.role };
+          // For development/demo purposes, allow any email/password combination
+          // In production, you should implement proper user authentication
+          if (!email || !password) {
+            return null;
+          }
           
-          // For now, return a dummy user (remove this in production)
+          // Return a dummy user for testing
           return { 
             id: '1', 
             email: email, 
+            name: email.split('@')[0],
             role: 'user',
             rememberMe: rememberMe === 'true'
           };
           
         } catch (error) {
           console.error('Authorization error:', error);
-          throw new Error('Failed to authenticate user');
+          return null;
         }
       },
     })

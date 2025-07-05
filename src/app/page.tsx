@@ -47,7 +47,7 @@ const MainContent: React.FC<MainContentProps> = ({ yBg, yText, mousePosition = {
       originalPrice: 29999,
       rating: 4.8,
       reviews: 124,
-      image: "photo-1503614472-8c60a59b3c06",
+      image: "photo-1544735716-392fe2489ffa",
       duration: "7 Days",
       location: "Gangtok, Sikkim",
       category: "Adventure"
@@ -60,7 +60,7 @@ const MainContent: React.FC<MainContentProps> = ({ yBg, yText, mousePosition = {
       originalPrice: 22999,
       rating: 4.9,
       reviews: 98,
-      image: "photo-1503614472-8c60a59b3c06",
+      image: "photo-1506905925346-21bda4d32df4",
       duration: "5 Days",
       location: "Lachung, Sikkim",
       category: "Trekking"
@@ -73,7 +73,7 @@ const MainContent: React.FC<MainContentProps> = ({ yBg, yText, mousePosition = {
       originalPrice: 19999,
       rating: 4.7,
       reviews: 87,
-      image: "photo-1503614472-8c60a59b3c06",
+      image: "photo-1472396961693-142e6e269027",
       duration: "4 Days",
       location: "Pelling, Sikkim",
       category: "Cultural"
@@ -551,21 +551,42 @@ const Home = () => {
 
   // Redirect to dashboard if already authenticated
   useEffect(() => {
-    if (status === 'authenticated') {
-      if (session?.user?.role === 'admin') {
-        router.push('/admin/dashboard');
-      } else if (session?.user?.role === 'partner') {
-        router.push('/partner/dashboard');
-      } else {
-        router.push('/dashboard');
-      }
+    if (status === 'authenticated' && session?.user) {
+      // Add a small delay to prevent immediate redirect
+      const timer = setTimeout(() => {
+        if (session?.user?.role === 'admin') {
+          router.push('/admin/dashboard');
+        } else if (session?.user?.role === 'partner') {
+          router.push('/partner/dashboard');
+        } else {
+          router.push('/dashboard');
+        }
+      }, 100);
+      
+      return () => clearTimeout(timer);
     }
   }, [status, session, router]);
 
+  // Show loading state only when status is loading
   if (status === 'loading') {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <Loader2 className="h-8 w-8 animate-spin" />
+      <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900">
+        <div className="text-center">
+          <Loader2 className="h-8 w-8 animate-spin mx-auto mb-4 text-blue-600" />
+          <p className="text-gray-600 dark:text-gray-400">Loading...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // If authenticated, show a brief loading state before redirect
+  if (status === 'authenticated' && session?.user) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900">
+        <div className="text-center">
+          <Loader2 className="h-8 w-8 animate-spin mx-auto mb-4 text-blue-600" />
+          <p className="text-gray-600 dark:text-gray-400">Redirecting to dashboard...</p>
+        </div>
       </div>
     );
   }

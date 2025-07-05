@@ -6,12 +6,13 @@ export async function middleware(request: NextRequest) {
   const token = await getToken({ req: request });
   const { pathname } = request.nextUrl;
 
-  // Protected routes
+  // Protected routes that require authentication
   const protectedRoutes = [
+    '/dashboard',
     '/profile',
     '/notifications',
-    '/partner',
-    '/admin',
+    '/partner/dashboard',
+    '/admin/dashboard',
   ];
 
   // Check if the current route is protected
@@ -26,16 +27,16 @@ export async function middleware(request: NextRequest) {
     return NextResponse.redirect(loginUrl);
   }
 
-  // Role-based access control
+  // Role-based access control (only for admin and partner specific routes)
   if (token) {
     // Admin routes
     if (pathname.startsWith('/admin') && token.role !== 'admin') {
-      return NextResponse.redirect(new URL('/', request.url));
+      return NextResponse.redirect(new URL('/dashboard', request.url));
     }
 
     // Partner routes
     if (pathname.startsWith('/partner') && token.role !== 'partner') {
-      return NextResponse.redirect(new URL('/', request.url));
+      return NextResponse.redirect(new URL('/dashboard', request.url));
     }
   }
 
@@ -44,6 +45,6 @@ export async function middleware(request: NextRequest) {
 
 export const config = {
   matcher: [
-    '/((?!api|_next/static|_next/image|favicon.ico|login|signup).*)',
+    '/((?!api|_next/static|_next/image|favicon.ico|login|signup|auth).*)',
   ],
 };
