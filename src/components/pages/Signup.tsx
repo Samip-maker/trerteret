@@ -1,64 +1,126 @@
 "use client";
 
 import { useState } from "react";
-import Link from "next/link";
-import { useSearchParams } from "next/navigation";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Mail, Lock, Eye, EyeOff, User, Phone, ArrowRight, Sparkles } from "lucide-react";
+import { Mail, Lock, Eye, EyeOff, User, Phone, ArrowRight, Sparkles, Shield, Zap, Heart } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import { useAuth, type Role, type SignUpCredentials } from "@/contexts/AuthContext";
 
-interface FormData extends Omit<SignUpCredentials, 'redirectTo'> {
+interface FormData {
+  name: string;
+  email: string;
+  phone: string;
+  password: string;
   confirmPassword: string;
 }
 
-const Signup = () => {
-  const searchParams = useSearchParams();
+const Index = () => {
   const { toast } = useToast();
-  const { signUp } = useAuth();
-  const from = searchParams.get("from") || "/";
-  const role = (searchParams.get("role") as Role | undefined) || "user";
-
+  
   const [formData, setFormData] = useState<FormData>({
     name: "",
     email: "",
     phone: "",
     password: "",
     confirmPassword: "",
-    role: role,
   });
+  
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [currentStep, setCurrentStep] = useState(0);
+  
+  // Validation states
+  const [validation, setValidation] = useState({
+    email: { isValid: false, message: "" },
+    phone: { isValid: false, message: "" },
+    password: { isValid: false, message: "" },
+    confirmPassword: { isValid: false, message: "" }
+  });
+
+  // Validation functions
+  const validateEmail = (email: string) => {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!email) return { isValid: false, message: "" };
+    if (!emailRegex.test(email)) return { isValid: false, message: "Please enter a valid email address" };
+    return { isValid: true, message: "Email looks good!" };
+  };
+
+  const validatePhone = (phone: string) => {
+    const phoneRegex = /^[\+]?[1-9][\d]{0,15}$/;
+    if (!phone) return { isValid: false, message: "" };
+    if (!phoneRegex.test(phone.replace(/\s/g, ''))) return { isValid: false, message: "Please enter a valid phone number" };
+    return { isValid: true, message: "Phone number looks good!" };
+  };
+
+  const validatePassword = (password: string) => {
+    if (!password) return { isValid: false, message: "" };
+    if (password.length < 6) return { isValid: false, message: "Password must be at least 6 characters" };
+    if (!/(?=.*[a-z])/.test(password)) return { isValid: false, message: "Password must contain at least one lowercase letter" };
+    if (!/(?=.*[A-Z])/.test(password)) return { isValid: false, message: "Password must contain at least one uppercase letter" };
+    if (!/(?=.*\d)/.test(password)) return { isValid: false, message: "Password must contain at least one number" };
+    return { isValid: true, message: "Password is strong!" };
+  };
+
+  const validateConfirmPassword = (confirmPassword: string, password: string) => {
+    if (!confirmPassword) return { isValid: false, message: "" };
+    if (confirmPassword !== password) return { isValid: false, message: "Passwords do not match" };
+    return { isValid: true, message: "Passwords match!" };
+  };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    
     setFormData({
       ...formData,
-      [e.target.name]: e.target.value
+      [name]: value
     });
+
+    // Live validation
+    switch (name) {
+      case 'email':
+        setValidation(prev => ({
+          ...prev,
+          email: validateEmail(value)
+        }));
+        break;
+      case 'phone':
+        setValidation(prev => ({
+          ...prev,
+          phone: validatePhone(value)
+        }));
+        break;
+      case 'password':
+        setValidation(prev => ({
+          ...prev,
+          password: validatePassword(value),
+          confirmPassword: validateConfirmPassword(formData.confirmPassword, value)
+        }));
+        break;
+      case 'confirmPassword':
+        setValidation(prev => ({
+          ...prev,
+          confirmPassword: validateConfirmPassword(value, formData.password)
+        }));
+        break;
+    }
   };
 
   const handleSignup = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     
-    // Validate passwords match
-    if (formData.password !== formData.confirmPassword) {
+    // Check if all validations pass
+    const isFormValid = validation.email.isValid && 
+                       validation.phone.isValid && 
+                       validation.password.isValid && 
+                       validation.confirmPassword.isValid;
+    
+    if (!isFormValid) {
       toast({
-        title: "Error",
-        description: "Passwords do not match",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    // Validate password length
-    if (formData.password.length < 6) {
-      toast({
-        title: "Error",
-        description: "Password must be at least 6 characters long",
+        title: "Validation Error",
+        description: "Please fix the validation errors before submitting",
         variant: "destructive",
       });
       return;
@@ -67,30 +129,20 @@ const Signup = () => {
     try {
       setIsLoading(true);
       
-      // Prepare the signup data with proper types
-      const signUpData: SignUpCredentials = {
-        name: formData.name.trim(),
-        email: formData.email.trim().toLowerCase(),
-        password: formData.password,
-        phone: formData.phone?.trim(),
-        role: role,
-        redirectTo: from,
-        rememberMe: false
-      };
+      // Simulate API call
+      await new Promise(resolve => setTimeout(resolve, 2000));
       
-      // Call the signup function from the auth context
-      await signUp(signUpData);
+      toast({
+        title: "Account Created!",
+        description: "Welcome! Your account has been successfully created.",
+      });
       
-      // Show success message (handled by auth context)
     } catch (err) {
       console.error("Signup error:", err);
       
-      // Handle error with proper type checking
-      const errorMessage = err instanceof Error ? err.message : "An error occurred during signup";
-      
       toast({
         title: "Signup failed",
-        description: errorMessage,
+        description: "An error occurred during signup. Please try again.",
         variant: "destructive",
       });
     } finally {
@@ -98,277 +150,367 @@ const Signup = () => {
     }
   };
 
-  return (
-    <div className="min-h-screen flex overflow-hidden relative">
-      {/* Parallax Background */}
-      <div className="absolute inset-0 z-0">
-        <div 
-          className="absolute inset-0 bg-cover bg-center bg-fixed"
-          style={{
-            backgroundImage: `url('https://images.unsplash.com/photo-1506905925346-21bda4d32df4?ixlib=rb-4.0.3&auto=format&fit=crop&w=2000&q=80')`,
-          }}
-        />
-        <div className="absolute inset-0 bg-gradient-to-br from-purple-900/80 via-blue-900/70 to-green-900/80" />
-        
-        {/* Floating Elements */}
-        <div className="absolute inset-0 overflow-hidden">
-          <div className="absolute top-1/4 left-1/4 w-32 h-32 bg-purple-500/20 rounded-full blur-xl animate-float" />
-          <div className="absolute top-3/4 right-1/4 w-24 h-24 bg-blue-500/20 rounded-full blur-lg animate-float" style={{ animationDelay: '2s' }} />
-          <div className="absolute top-1/2 left-3/4 w-16 h-16 bg-green-500/20 rounded-full blur-md animate-float" style={{ animationDelay: '4s' }} />
+  const FloatingLabelInput = ({ 
+    id, 
+    name, 
+    type, 
+    value, 
+    onChange, 
+    label, 
+    icon: Icon, 
+    validation,
+    showToggle,
+    onToggle 
+  }: any) => {
+    const [isFocused, setIsFocused] = useState(false);
+    
+    return (
+      <div className="relative group">
+        <div className="relative">
+          <Icon className="absolute left-4 top-1/2 transform -translate-y-1/2 h-5 w-5 text-slate-400 group-focus-within:text-blue-500 transition-colors duration-300 z-10" />
+          <Input
+            id={id}
+            name={name}
+            type={type}
+            value={value}
+            onChange={onChange}
+            onFocus={() => setIsFocused(true)}
+            onBlur={() => setIsFocused(false)}
+            required
+            className={`
+              pl-12 ${showToggle ? 'pr-12' : 'pr-4'} h-14 rounded-xl border-2 transition-all duration-300 
+              bg-white/80 backdrop-blur-sm text-slate-700 text-base peer
+              focus:bg-white focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10
+              ${value && validation && (validation.isValid ? 'border-emerald-400 bg-emerald-50/50' : 'border-red-400 bg-red-50/50')}
+              ${!value && !isFocused ? 'border-slate-200' : ''}
+            `}
+          />
+          <Label 
+            htmlFor={id} 
+            className={`
+              absolute left-12 transition-all duration-300 pointer-events-none font-medium
+              ${value || isFocused 
+                ? '-translate-y-6 translate-x-[-12px] text-sm bg-white px-2 rounded-md' 
+                : 'top-1/2 -translate-y-1/2 text-base'
+              }
+              ${isFocused ? 'text-blue-600' : 'text-slate-500'}
+              ${value && validation && validation.isValid ? 'text-emerald-600' : ''}
+              ${value && validation && !validation.isValid ? 'text-red-600' : ''}
+            `}
+          >
+            {label}
+          </Label>
+          {showToggle && (
+            <button
+              type="button"
+              onClick={onToggle}
+              className="absolute right-4 top-1/2 transform -translate-y-1/2 text-slate-400 hover:text-blue-500 transition-colors duration-300 z-10"
+            >
+              {showToggle === 'password' ? (
+                type === 'password' ? <Eye className="h-5 w-5" /> : <EyeOff className="h-5 w-5" />
+              ) : null}
+            </button>
+          )}
+          
+          {/* Validation Message */}
+          <AnimatePresence>
+            {value && validation && (
+              <motion.div
+                initial={{ opacity: 0, y: -10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -10 }}
+                className={`absolute -bottom-6 left-0 text-xs font-medium flex items-center gap-1 ${
+                  validation.isValid ? 'text-emerald-600' : 'text-red-500'
+                }`}
+              >
+                {validation.isValid ? (
+                  <div className="w-1 h-1 bg-emerald-500 rounded-full"></div>
+                ) : (
+                  <div className="w-1 h-1 bg-red-500 rounded-full"></div>
+                )}
+                {validation.message}
+              </motion.div>
+            )}
+          </AnimatePresence>
         </div>
       </div>
+    );
+  };
 
-      {/* Left Side - Signup Form */}
-      <motion.div
-        initial={{ opacity: 0, x: -50 }}
-        animate={{ opacity: 1, x: 0 }}
-        transition={{ duration: 0.8, ease: "easeOut" }}
-        className="flex-1 flex items-center justify-center p-6 relative z-10"
-      >
-        <div className="w-full max-w-lg space-y-6">
-          {/* Header */}
-          <motion.div
-            initial={{ opacity: 0, y: -20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.2, duration: 0.6 }}
-            className="text-center"
-          >
-            <div className="flex items-center justify-center mb-4">
-              <Sparkles className="h-8 w-8 text-purple-400 mr-2 animate-pulse" />
-              <h1 className="text-4xl font-bold bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">
-                Join Us
+  return (
+    <div className="h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 relative overflow-hidden">
+      {/* Animated Background Elements */}
+      <div className="absolute inset-0 overflow-hidden">
+        <motion.div 
+          animate={{ 
+            x: [0, 100, 0],
+            y: [0, -100, 0],
+            rotate: [0, 180, 360]
+          }}
+          transition={{ 
+            duration: 20, 
+            repeat: Infinity, 
+            ease: "linear" 
+          }}
+          className="absolute top-1/4 left-1/4 w-64 h-64 bg-gradient-to-r from-blue-400/20 to-purple-400/20 rounded-full blur-3xl"
+        />
+        <motion.div 
+          animate={{ 
+            x: [0, -150, 0],
+            y: [0, 100, 0],
+            rotate: [0, -180, -360]
+          }}
+          transition={{ 
+            duration: 25, 
+            repeat: Infinity, 
+            ease: "linear" 
+          }}
+          className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-gradient-to-r from-purple-400/15 to-pink-400/15 rounded-full blur-3xl"
+        />
+      </div>
+
+      <div className="relative z-10 flex h-full">
+        {/* Left Side - Form */}
+        <div className="flex-1 flex items-center justify-center p-4 lg:p-8">
+          <div className="w-full max-w-sm">
+            {/* Header */}
+            <motion.div
+              initial={{ opacity: 0, y: -20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6 }}
+              className="text-center mb-6"
+            >
+              <motion.div 
+                className="inline-flex items-center justify-center w-12 h-12 bg-gradient-to-r from-blue-500 to-purple-600 rounded-xl mb-4 shadow-lg"
+                whileHover={{ scale: 1.05, rotate: 5 }}
+                transition={{ duration: 0.2 }}
+              >
+                <Sparkles className="h-6 w-6 text-white" />
+              </motion.div>
+              <h1 className="text-3xl font-bold text-slate-800 mb-1">
+                Join Us Today
               </h1>
-            </div>
-            <p className="text-gray-200">
-              Start your incredible journey today
-            </p>
-          </motion.div>
+              <p className="text-slate-600 text-sm">
+                Create your account and start your journey
+              </p>
+            </motion.div>
 
-          {/* Signup Form */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.4, duration: 0.6 }}
-            className="glass-morphism rounded-3xl p-6 shadow-2xl border border-white/20"
-          >
-            <form onSubmit={handleSignup} className="space-y-4">
-              {/* Name and Email */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="relative group">
-                  <Label htmlFor="name" className="block text-sm font-medium text-gray-200 mb-1">
-                    Full Name
-                  </Label>
-                  <div className="relative">
-                    <User className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400 group-focus-within:text-purple-400 transition-colors" />
-                    <Input
-                      id="name"
-                      name="name"
-                      type="text"
-                      placeholder="Your name"
-                      value={formData.name}
-                      onChange={handleInputChange}
-                      required
-                      className="pl-10 h-10 rounded-xl border-white/20 focus:border-purple-400 transition-all duration-300 bg-white/10 backdrop-blur-sm text-white placeholder:text-gray-300"
-                    />
-                  </div>
-                </div>
-
-                <div className="relative group">
-                  <Label htmlFor="email" className="block text-sm font-medium text-gray-200 mb-1">
-                    Email
-                  </Label>
-                  <div className="relative">
-                    <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400 group-focus-within:text-purple-400 transition-colors" />
-                    <Input
-                      id="email"
-                      name="email"
-                      type="email"
-                      placeholder="your@email.com"
-                      value={formData.email}
-                      onChange={handleInputChange}
-                      required
-                      className="pl-10 h-10 rounded-xl border-white/20 focus:border-purple-400 transition-all duration-300 bg-white/10 backdrop-blur-sm text-white placeholder:text-gray-300"
-                    />
-                  </div>
-                </div>
-              </div>
-
-              {/* Phone */}
-              <div className="relative group">
-                <Label htmlFor="phone" className="block text-sm font-medium text-gray-200 mb-1">
-                  Phone Number
-                </Label>
-                <div className="relative">
-                  <Phone className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400 group-focus-within:text-purple-400 transition-colors" />
-                  <Input
-                    id="phone"
-                    name="phone"
-                    type="tel"
-                    placeholder="Your phone number"
-                    value={formData.phone}
+            {/* Form */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: 0.2 }}
+              className="bg-white/70 backdrop-blur-xl rounded-2xl p-6 shadow-2xl border border-white/20"
+            >
+              <form onSubmit={handleSignup} className="space-y-4">
+                {/* Personal Information */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <FloatingLabelInput
+                    id="name"
+                    name="name"
+                    type="text"
+                    value={formData.name}
                     onChange={handleInputChange}
-                    required
-                    className="pl-10 h-10 rounded-xl border-white/20 focus:border-purple-400 transition-all duration-300 bg-white/10 backdrop-blur-sm text-white placeholder:text-gray-300"
+                    label="Full Name"
+                    icon={User}
+                  />
+                  
+                  <FloatingLabelInput
+                    id="email"
+                    name="email"
+                    type="email"
+                    value={formData.email}
+                    onChange={handleInputChange}
+                    label="Email Address"
+                    icon={Mail}
+                    validation={validation.email}
                   />
                 </div>
-              </div>
 
-              {/* Passwords */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="relative group">
-                  <Label htmlFor="password" className="block text-sm font-medium text-gray-200 mb-1">
-                    Password
-                  </Label>
-                  <div className="relative">
-                    <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400 group-focus-within:text-purple-400 transition-colors" />
-                    <Input
-                      id="password"
-                      name="password"
-                      type={showPassword ? "text" : "password"}
-                      placeholder="Password"
-                      value={formData.password}
-                      onChange={handleInputChange}
-                      required
-                      className="pl-10 pr-10 h-10 rounded-xl border-white/20 focus:border-purple-400 transition-all duration-300 bg-white/10 backdrop-blur-sm text-white placeholder:text-gray-300"
-                    />
-                    <button
-                      type="button"
-                      onClick={() => setShowPassword(!showPassword)}
-                      className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-purple-400 transition-colors"
-                    >
-                      {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                    </button>
-                  </div>
-                </div>
-
-                <div className="relative group">
-                  <Label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-200 mb-1">
-                    Confirm
-                  </Label>
-                  <div className="relative">
-                    <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400 group-focus-within:text-purple-400 transition-colors" />
-                    <Input
-                      id="confirmPassword"
-                      name="confirmPassword"
-                      type={showConfirmPassword ? "text" : "password"}
-                      placeholder="Confirm"
-                      value={formData.confirmPassword}
-                      onChange={handleInputChange}
-                      required
-                      className="pl-10 pr-10 h-10 rounded-xl border-white/20 focus:border-purple-400 transition-all duration-300 bg-white/10 backdrop-blur-sm text-white placeholder:text-gray-300"
-                    />
-                    <button
-                      type="button"
-                      onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                      className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-purple-400 transition-colors"
-                    >
-                      {showConfirmPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                    </button>
-                  </div>
-                </div>
-              </div>
-
-              {/* Terms */}
-              <div className="flex items-center space-x-2">
-                <input
-                  id="terms"
-                  type="checkbox"
-                  required
-                  className="rounded border-gray-300 text-purple-600 focus:ring-purple-500"
+                {/* Phone - Full Width */}
+                <FloatingLabelInput
+                  id="phone"
+                  name="phone"
+                  type="tel"
+                  value={formData.phone}
+                  onChange={handleInputChange}
+                  label="Phone Number"
+                  icon={Phone}
+                  validation={validation.phone}
                 />
-                <Label htmlFor="terms" className="text-xs text-gray-300">
-                  I agree to the{" "}
-                  <Link href="/terms" className="text-purple-400 hover:underline">
-                    Terms
-                  </Link>{" "}
-                  and{" "}
-                  <Link href="/privacy" className="text-purple-400 hover:underline">
-                    Privacy Policy
-                  </Link>
-                </Label>
-              </div>
 
-              {/* Submit Button */}
-              <Button
-                type="submit"
-                disabled={isLoading}
-                className="w-full h-11 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-semibold rounded-xl shadow-lg transition-all duration-300 transform hover:scale-[1.02] active:scale-[0.98]"
+                {/* Security */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <FloatingLabelInput
+                    id="password"
+                    name="password"
+                    type={showPassword ? "text" : "password"}
+                    value={formData.password}
+                    onChange={handleInputChange}
+                    label="Password"
+                    icon={Lock}
+                    validation={validation.password}
+                    showToggle="password"
+                    onToggle={() => setShowPassword(!showPassword)}
+                  />
+                  
+                  <FloatingLabelInput
+                    id="confirmPassword"
+                    name="confirmPassword"
+                    type={showConfirmPassword ? "text" : "password"}
+                    value={formData.confirmPassword}
+                    onChange={handleInputChange}
+                    label="Confirm Password"
+                    icon={Lock}
+                    validation={validation.confirmPassword}
+                    showToggle="password"
+                    onToggle={() => setShowConfirmPassword(!showConfirmPassword)}
+                  />
+                </div>
+
+                {/* Terms */}
+                <motion.div 
+                  className="flex items-start space-x-2 pt-1"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ delay: 0.4 }}
+                >
+                  <input
+                    id="terms"
+                    type="checkbox"
+                    required
+                    className="mt-0.5 rounded border-slate-300 text-blue-600 focus:ring-blue-500 focus:ring-2"
+                  />
+                  <Label htmlFor="terms" className="text-xs text-slate-600 leading-relaxed">
+                    I agree to the{" "}
+                    <a href="#" className="text-blue-600 hover:text-blue-700 underline font-medium">
+                      Terms of Service
+                    </a>{" "}
+                    and{" "}
+                    <a href="#" className="text-blue-600 hover:text-blue-700 underline font-medium">
+                      Privacy Policy
+                    </a>
+                  </Label>
+                </motion.div>
+
+                {/* Submit Button */}
+                <motion.div
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                >
+                  <Button
+                    type="submit"
+                    disabled={isLoading}
+                    className="w-full h-12 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-semibold rounded-xl shadow-lg transition-all duration-300 text-sm"
+                  >
+                    {isLoading ? (
+                      <div className="flex items-center space-x-2">
+                        <motion.div 
+                          className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full"
+                          animate={{ rotate: 360 }}
+                          transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+                        />
+                        <span>Creating Account...</span>
+                      </div>
+                    ) : (
+                      <div className="flex items-center space-x-2">
+                        <span>Create Account</span>
+                        <ArrowRight className="h-4 w-4" />
+                      </div>
+                    )}
+                  </Button>
+                </motion.div>
+              </form>
+
+              {/* Sign In Link */}
+              <motion.div 
+                className="mt-4 text-center"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 0.6 }}
               >
-                {isLoading ? (
-                  <div className="flex items-center space-x-2">
-                    <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
-                    <span>Creating Account...</span>
-                  </div>
-                ) : (
-                  <div className="flex items-center space-x-2">
-                    <span>Create Account</span>
-                    <ArrowRight className="h-4 w-4" />
-                  </div>
-                )}
-              </Button>
-            </form>
-
-            {/* Sign In Link */}
-            <div className="mt-4 text-center">
-              <span className="text-gray-300">Already have an account? </span>
-              <Link href="/login" className="text-purple-400 hover:text-purple-300 font-semibold">
-                Sign in →
-              </Link>
-            </div>
-          </motion.div>
+                <span className="text-slate-600 text-sm">Already have an account? </span>
+                <a href="#" className="text-blue-600 hover:text-blue-700 font-semibold underline text-sm">
+                  Sign in
+                </a>
+              </motion.div>
+            </motion.div>
+          </div>
         </div>
-      </motion.div>
 
-      {/* Right Side - Content Banner */}
-      <motion.div
-        initial={{ opacity: 0, x: 50 }}
-        animate={{ opacity: 1, x: 0 }}
-        transition={{ duration: 0.8, ease: "easeOut" }}
-        className="hidden lg:flex lg:w-1/2 relative overflow-hidden"
-      >
-        {/* Content */}
-        <div className="relative z-20 flex flex-col justify-center items-center text-white p-12 space-y-8">
-          <motion.div
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.6, duration: 0.8 }}
-            className="text-center space-y-6"
-          >
-            <h2 className="text-5xl font-bold leading-tight">
-              Start Your
-              <br />
-              <span className="bg-gradient-to-r from-yellow-400 to-orange-400 bg-clip-text text-transparent">
-                Adventure
-              </span>
-            </h2>
-            <p className="text-xl text-purple-100 max-w-md">
-              Join thousands of travelers discovering hidden gems in the Himalayas
-            </p>
-          </motion.div>
-          
-          <motion.div
-            initial={{ opacity: 0, scale: 0.8 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ delay: 0.8, duration: 0.6 }}
-            className="grid grid-cols-3 gap-3 text-center"
-          >
-            <div className="glass-morphism rounded-xl p-3 hover-lift-3d">
-              <div className="text-xl font-bold">200+</div>
-              <div className="text-xs text-purple-200">Partners</div>
-            </div>
-            <div className="glass-morphism rounded-xl p-3 hover-lift-3d">
-              <div className="text-xl font-bold">50+</div>
-              <div className="text-xs text-purple-200">Places</div>
-            </div>
-            <div className="glass-morphism rounded-xl p-3 hover-lift-3d">
-              <div className="text-xl font-bold">99%</div>
-              <div className="text-xs text-purple-200">Satisfied</div>
-            </div>
-          </motion.div>
-        </div>
-      </motion.div>
+        {/* Right Side - Illustration */}
+        <motion.div
+          initial={{ opacity: 0, x: 50 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ duration: 0.8, delay: 0.3 }}
+          className="hidden lg:flex lg:w-1/2 relative items-center justify-center p-8"
+        >
+          <div className="text-center space-y-6">
+            {/* Main Illustration */}
+            <motion.div
+              className="relative"
+              animate={{ y: [0, -10, 0] }}
+              transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
+            >
+              <div className="w-64 h-64 bg-gradient-to-br from-blue-400 to-purple-600 rounded-full opacity-20 blur-3xl absolute inset-0" />
+              <div className="relative bg-white/80 backdrop-blur-sm rounded-2xl p-6 shadow-2xl border border-white/30">
+                <div className="grid grid-cols-3 gap-3 mb-4">
+                  <motion.div 
+                    className="w-12 h-12 bg-gradient-to-r from-blue-500 to-cyan-500 rounded-xl flex items-center justify-center"
+                    whileHover={{ scale: 1.1, rotate: 10 }}
+                  >
+                    <Shield className="h-6 w-6 text-white" />
+                  </motion.div>
+                  <motion.div 
+                    className="w-12 h-12 bg-gradient-to-r from-purple-500 to-pink-500 rounded-xl flex items-center justify-center"
+                    whileHover={{ scale: 1.1, rotate: -10 }}
+                  >
+                    <Zap className="h-6 w-6 text-white" />
+                  </motion.div>
+                  <motion.div 
+                    className="w-12 h-12 bg-gradient-to-r from-green-500 to-emerald-500 rounded-xl flex items-center justify-center"
+                    whileHover={{ scale: 1.1, rotate: 10 }}
+                  >
+                    <Heart className="h-6 w-6 text-white" />
+                  </motion.div>
+                </div>
+                <h3 className="text-xl font-bold text-slate-800 mb-1">
+                  Welcome to Our Community
+                </h3>
+                <p className="text-slate-600 text-sm">
+                  Join thousands of users who trust us with their journey
+                </p>
+              </div>
+            </motion.div>
+
+            {/* Stats */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.8, duration: 0.6 }}
+              className="grid grid-cols-3 gap-4"
+            >
+              {[
+                { number: "10K+", label: "Users" },
+                { number: "99%", label: "Satisfied" },
+                { number: "24/7", label: "Support" }
+              ].map((stat, index) => (
+                <motion.div
+                  key={index}
+                  className="bg-white/60 backdrop-blur-sm rounded-xl p-3 text-center shadow-lg border border-white/20"
+                  whileHover={{ scale: 1.05, y: -5 }}
+                  transition={{ duration: 0.2 }}
+                >
+                  <div className="text-lg font-bold text-slate-800">{stat.number}</div>
+                  <div className="text-xs text-slate-600">{stat.label}</div>
+                </motion.div>
+              ))}
+            </motion.div>
+          </div>
+        </motion.div>
+      </div>
     </div>
   );
 };
 
-export default Signup;
+export default Index;
