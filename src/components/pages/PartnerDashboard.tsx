@@ -10,15 +10,11 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import {
   Plus,
   Package,
-  Building,
-  Users,
   Calendar,
   Eye,
   Edit,
   Trash2,
-  TrendingUp,
   Star,
-  MapPin,
   IndianRupee
 } from "lucide-react";
 

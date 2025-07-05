@@ -294,7 +294,7 @@ const AdvancedSearch = ({ onSearch, onReset, initialFilters = {} }: AdvancedSear
           <div className="px-3">
             <Slider
               value={filters.priceRange}
-              onChange={(value: number[]) => handleFilterChange('priceRange', value as [number, number])}
+              onValueChange={(value: number[]) => handleFilterChange('priceRange', value as [number, number])}
               max={100000}
               min={500}
               step={500}

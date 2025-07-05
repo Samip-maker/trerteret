@@ -7,8 +7,9 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
-import { Star, Camera, ThumbsUp, ThumbsDown, Image as ImageIcon } from "lucide-react";
+import { Star, ThumbsUp, ThumbsDown, Image as ImageIcon } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import Image from 'next/image';
 
 interface Review {
   id: string;
@@ -34,7 +35,7 @@ interface ReviewsRatingsProps {
   reviews: Review[];
 }
 
-const ReviewsRatings = ({ itemId, itemType, averageRating, totalReviews, reviews }: ReviewsRatingsProps) => {
+const ReviewsRatings = ({ averageRating, totalReviews, reviews }: Omit<ReviewsRatingsProps, 'itemId' | 'itemType'>) => {
   const [showWriteReview, setShowWriteReview] = useState(false);
   const [newReview, setNewReview] = useState({
     rating: 0,
@@ -71,7 +72,14 @@ const ReviewsRatings = ({ itemId, itemType, averageRating, totalReviews, reviews
     setShowWriteReview(false);
   };
 
-  const StarRating = ({ rating, size = 16, interactive = false, onRatingChange }: any) => {
+  interface StarRatingProps {
+    rating: number;
+    size?: number;
+    interactive?: boolean;
+    onRatingChange?: (rating: number) => void;
+  }
+
+  const StarRating = ({ rating, size = 16, interactive = false, onRatingChange }: StarRatingProps) => {
     return (
       <div className="flex space-x-1">
         {[1, 2, 3, 4, 5].map((star) => (
@@ -263,12 +271,15 @@ const ReviewsRatings = ({ itemId, itemType, averageRating, totalReviews, reviews
                   {review.images && review.images.length > 0 && (
                     <div className="flex space-x-2 mt-3">
                       {review.images.map((image, index) => (
-                        <img
-                          key={index}
-                          src={image}
-                          alt={`Review image ${index + 1}`}
-                          className="w-16 h-16 object-cover rounded-lg cursor-pointer hover:opacity-75 transition-opacity"
-                        />
+                        <div key={index} className="relative w-16 h-16">
+                          <Image
+                            src={image}
+                            alt={`Review image ${index + 1}`}
+                            fill
+                            className="object-cover rounded-lg cursor-pointer hover:opacity-75 transition-opacity"
+                            sizes="64px"
+                          />
+                        </div>
                       ))}
                     </div>
                   )}

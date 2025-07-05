@@ -1,11 +1,10 @@
 
-import React, { useState } from 'react';
+import React, { useState, useCallback } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { MapPin, Plus, X, Calendar, Users, Plane } from "lucide-react";
-import { useToast } from "@/hooks/use-toast";
+import { MapPin, Plus, X, Plane } from "lucide-react";
 
 interface Destination {
   id: string;
@@ -30,7 +29,7 @@ const MultiCityBooking = () => {
     }
   ]);
   const [totalCost, setTotalCost] = useState(0);
-  const { toast } = useToast();
+
 
   const addDestination = () => {
     const newDestination: Destination = {
@@ -57,14 +56,14 @@ const MultiCityBooking = () => {
     ));
   };
 
-  const calculateTotalCost = () => {
+  const calculateTotalCost = useCallback(() => {
     const total = destinations.reduce((sum, dest) => sum + dest.estimatedCost, 0);
     setTotalCost(total);
-  };
+  }, [destinations]);
 
   React.useEffect(() => {
     calculateTotalCost();
-  }, [destinations]);
+  }, [destinations, calculateTotalCost]);
 
   return (
     <div className="space-y-6">

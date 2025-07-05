@@ -17,7 +17,7 @@ export async function POST(request: Request) {
     let body;
     try {
       body = await request.json();
-    } catch (error) {
+    } catch {
       return handleError('Invalid JSON payload');
     }
 
@@ -53,7 +53,16 @@ export async function POST(request: Request) {
       }
 
       // Create user (password will be hashed by the pre-save hook)
-      const userData: any = {
+      interface UserData {
+        name: string;
+        email: string;
+        password: string;
+        phone?: string;
+        role?: string;
+        employeeId?: string;
+      }
+
+      const userData: UserData = {
         name: name.trim(),
         email: email.toLowerCase().trim(),
         password,
@@ -73,6 +82,7 @@ export async function POST(request: Request) {
 
       // Return user data without password
       const userObject = user.toObject();
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const { password: _, ...userWithoutPassword } = userObject;
 
       return NextResponse.json(
@@ -83,28 +93,38 @@ export async function POST(request: Request) {
         },
         { status: 201 }
       );
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const dbError = error as { 
+        code?: number; 
+        keyPattern?: Record<string, unknown>; 
+        keyValue?: Record<string, unknown>;
+        name: string;
+        message: string;
+        errors?: Record<string, { message: string }>;
+        stack?: string;
+      };
       console.error('Database operation failed:', {
-        name: error.name,
-        code: error.code,
-        keyPattern: error.keyPattern,
-        keyValue: error.keyValue,
-        message: error.message,
-        stack: error.stack
+        name: dbError.name,
+        code: dbError.code,
+        keyPattern: dbError.keyPattern,
+        keyValue: dbError.keyValue,
+        message: dbError.message,
+        stack: dbError.stack
       });
       
-      if (error.code === 11000) {
+      if (dbError.code === 11000) {
         // Handle duplicate key error
-        const field = Object.keys(error.keyPattern)[0];
+        const field = Object.keys(dbError.keyPattern || {})[0];
         return handleError(`${field} already exists`);
-      } else if (error.name === 'ValidationError') {
-        const errors = Object.values(error.errors).map((err: any) => err.message);
+      } else if (dbError.name === 'ValidationError' && dbError.errors) {
+        const errors = Object.values(dbError.errors).map(err => err.message);
         return handleError(errors.join(', '));
       }
-      return handleError('Database operation failed: ' + error.message, 500);
+      return handleError('Database operation failed: ' + dbError.message, 500);
     }
-  } catch (error: any) {
-    console.error('Unexpected error in signup:', error);
-    return handleError('An unexpected error occurred', 500);
+  } catch (error) {
+    const err = error as Error;
+    console.error('Unexpected error in signup:', err);
+    return handleError('An unexpected error occurred: ' + err.message, 500);
   }
 }

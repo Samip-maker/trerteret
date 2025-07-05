@@ -16,12 +16,9 @@ import {
   Users,
   Heart,
   Filter,
-  Search,
-  Wifi,
-  Car,
-  Coffee,
-  Mountain
+  Search
 } from "lucide-react";
+import Image from "next/image";
 import { useToast } from "@/hooks/use-toast";
 
 const Hotels = () => {
@@ -29,12 +26,27 @@ const Hotels = () => {
   const [sortBy, setSortBy] = useState("popular");
   const [filterType, setFilterType] = useState("all");
   const [showPaymentGateway, setShowPaymentGateway] = useState(false);
-  const [selectedBooking, setSelectedBooking] = useState<any>(null);
+  interface WishlistItem {
+    id: string;
+    type: 'package' | 'hotel';
+    name: string;
+    description: string;
+    price: number;
+    originalPrice?: number;
+    rating: number;
+    reviews: number;
+    image: string;
+    location: string;
+    dateAdded: string;
+    availability?: string;
+  }
+
+  const [selectedBooking, setSelectedBooking] = useState<{ title: string; dates: string; guests: number } | null>(null);
   const [showAdvancedSearch, setShowAdvancedSearch] = useState(false);
-  const [wishlistItems, setWishlistItems] = useState<any[]>([]);
+  const [wishlistItems, setWishlistItems] = useState<WishlistItem[]>([]);
   const { toast } = useToast();
 
-  const accommodations = [
+  const accommodations: Accommodation[] = [
     {
       id: 1,
       name: "Himalayan Heritage Resort",
@@ -127,30 +139,42 @@ const Hotels = () => {
     }
   ];
 
-  const accommodationTypes = [
-    { value: "all", label: "All Types" },
-    { value: "Hotel", label: "Hotels" },
-    { value: "Homestay", label: "Homestays" },
-    { value: "Lodge", label: "Lodges" }
-  ];
-
-  const filteredAccommodations = accommodations.filter(acc => {
-    const matchesSearch = acc.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+  // Filter and sort accommodations based on search and filters
+  const filteredAndSortedAccommodations = accommodations
+    .filter(acc => {
+      const matchesSearch = acc.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
                          acc.location.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesType = filterType === "all" || acc.type === filterType;
-    return matchesSearch && matchesType;
-  });
+      const matchesType = filterType === "all" || acc.type === filterType;
+      return matchesSearch && matchesType;
+    })
+    .sort((a, b) => {
+      switch (sortBy) {
+        case "price-low": return a.pricePerNight - b.pricePerNight;
+        case "price-high": return b.pricePerNight - a.pricePerNight;
+        case "rating": return b.rating - a.rating;
+        default: return b.reviews - a.reviews;
+      }
+    });
 
-  const sortedAccommodations = [...filteredAccommodations].sort((a, b) => {
-    switch (sortBy) {
-      case "price-low": return a.pricePerNight - b.pricePerNight;
-      case "price-high": return b.pricePerNight - a.pricePerNight;
-      case "rating": return b.rating - a.rating;
-      default: return b.reviews - a.reviews;
-    }
-  });
+  interface Accommodation {
+    id: number;
+    name: string;
+    pricePerNight: number;
+    originalPrice?: number;
+    rating: number;
+    reviews: number;
+    type: string;
+    image: string;
+    location: string;
+    description: string;
+    amenities: string[];
+    roomTypes: string[];
+    capacity: string;
+  }
 
-  const handleBookNow = (accommodation: any) => {
+  // Removed unused BookingDetails interface
+
+  const handleBookNow = (accommodation: Accommodation) => {
     setSelectedBooking({
       title: accommodation.name,
       dates: "Dec 15-18, 2024",
@@ -167,7 +191,7 @@ const Hotels = () => {
     });
   };
 
-  const handleAddToWishlist = (accommodation: any) => {
+  const handleAddToWishlist = (accommodation: Accommodation) => {
     const wishlistItem = {
       id: accommodation.id.toString(),
       type: 'hotel' as const,
@@ -323,50 +347,51 @@ const Hotels = () => {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {/* Sample hotel card with new features */}
-            <Card className="overflow-hidden hover:shadow-xl transition-all duration-300 group bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700">
-              <div className="relative">
-                <img
-                  src="https://images.unsplash.com/photo-1649972904349-6e44c42644a7?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80"
-                  alt="Himalayan Heritage Resort"
-                  className="w-full h-48 object-cover group-hover:scale-105 transition-transform duration-300"
-                />
-                <Badge className="absolute top-3 left-3 bg-green-600 text-white">
-                  Hotel
-                </Badge>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="absolute top-3 right-3 bg-white/80 hover:bg-white dark:bg-gray-800/80 dark:hover:bg-gray-800"
-                  onClick={() => handleAddToWishlist({
-                    id: 1,
-                    name: "Himalayan Heritage Resort",
-                    description: "Luxury resort with panoramic mountain views",
-                    pricePerNight: 4500,
-                    originalPrice: 6000,
-                    rating: 4.8,
-                    reviews: 234,
-                    image: "photo-1649972904349-6e44c42644a7",
-                    location: "Gangtok, East Sikkim"
-                  })}
-                >
-                  <Heart className="h-4 w-4 text-gray-600 dark:text-gray-400" />
-                </Button>
-              </div>
-              
-              <CardHeader>
-                <div className="flex justify-between items-start">
-                  <CardTitle className="text-lg group-hover:text-green-600 dark:group-hover:text-green-400 transition-colors text-gray-900 dark:text-white">
-                    Himalayan Heritage Resort
-                  </CardTitle>
-                  <div className="text-right">
-                    <div className="text-2xl font-bold text-green-600 dark:text-green-400">₹4,500</div>
-                    <div className="text-sm text-gray-500 dark:text-gray-400 line-through">₹6,000</div>
-                    <div className="text-xs text-gray-500 dark:text-gray-400">per night</div>
+            {filteredAndSortedAccommodations.map((accommodation) => (
+              <Card key={accommodation.id} className="overflow-hidden hover:shadow-xl transition-all duration-300 group bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700">
+                <div className="relative">
+                  <div className="relative w-full h-48 overflow-hidden">
+                    <Image
+                      src={`https://images.unsplash.com/${accommodation.image}?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80`}
+                      alt={accommodation.name}
+                      fill
+                      sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                      className="object-cover group-hover:scale-105 transition-transform duration-300"
+                      priority
+                    />
                   </div>
+                  <Badge className="absolute top-3 left-3 bg-green-600 text-white">
+                    {accommodation.type}
+                  </Badge>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="absolute top-3 right-3 bg-white/80 hover:bg-white dark:bg-gray-800/80 dark:hover:bg-gray-800"
+                    onClick={() => handleAddToWishlist(accommodation)}
+                  >
+                    <Heart className="h-4 w-4 text-gray-600 dark:text-gray-400" />
+                  </Button>
                 </div>
+                
+                <CardHeader>
+                  <div className="flex justify-between items-start">
+                    <CardTitle className="text-lg group-hover:text-green-600 dark:group-hover:text-green-400 transition-colors text-gray-900 dark:text-white">
+                      {accommodation.name}
+                    </CardTitle>
+                    <div className="text-right">
+                      <div className="text-2xl font-bold text-green-600 dark:text-green-400">
+                        ₹{accommodation.pricePerNight.toLocaleString()}
+                      </div>
+                      {accommodation.originalPrice && (
+                        <div className="text-sm text-gray-500 dark:text-gray-400 line-through">
+                          ₹{accommodation.originalPrice.toLocaleString()}
+                        </div>
+                      )}
+                      <div className="text-xs text-gray-500 dark:text-gray-400">per night</div>
+                    </div>
+                  </div>
                 <CardDescription className="text-gray-600 dark:text-gray-400">
-                  Luxury resort with panoramic mountain views and traditional Sikkimese architecture
+                  {accommodation.description}
                 </CardDescription>
               </CardHeader>
               
@@ -375,39 +400,37 @@ const Hotels = () => {
                   <div className="flex items-center justify-between text-sm text-gray-600 dark:text-gray-400">
                     <div className="flex items-center space-x-1">
                       <MapPin className="h-4 w-4" />
-                      <span>Gangtok, East Sikkim</span>
+                      <span>{accommodation.location}</span>
                     </div>
                     <div className="flex items-center space-x-1">
                       <Users className="h-4 w-4" />
-                      <span>2-4 guests</span>
+                      <span>{accommodation.capacity}</span>
                     </div>
                   </div>
                   
                   <div className="flex flex-wrap gap-1">
-                    <Badge variant="secondary" className="text-xs bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300">
-                      Free WiFi
-                    </Badge>
-                    <Badge variant="secondary" className="text-xs bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300">
-                      Restaurant
-                    </Badge>
-                    <Badge variant="secondary" className="text-xs bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300">
-                      Spa
-                    </Badge>
+                    {accommodation.amenities.slice(0, 3).map((amenity, index) => (
+                      <Badge key={index} variant="secondary" className="text-xs bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300">
+                        {amenity}
+                      </Badge>
+                    ))}
+                    {accommodation.amenities.length > 3 && (
+                      <Badge variant="secondary" className="text-xs bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300">
+                        +{accommodation.amenities.length - 3} more
+                      </Badge>
+                    )}
                   </div>
                   
                   <div className="flex items-center justify-between pt-2">
                     <div className="flex items-center space-x-1">
                       <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
-                      <span className="font-medium text-gray-900 dark:text-white">4.8</span>
-                      <span className="text-gray-500 dark:text-gray-400 text-sm">(234 reviews)</span>
+                      <span className="font-medium text-gray-900 dark:text-white">{accommodation.rating}</span>
+                      <span className="text-gray-500 dark:text-gray-400 text-sm">({accommodation.reviews} reviews)</span>
                     </div>
                     <Button 
                       size="sm" 
                       className="bg-green-600 hover:bg-green-700 text-white"
-                      onClick={() => handleBookNow({
-                        name: "Himalayan Heritage Resort",
-                        pricePerNight: 4500
-                      })}
+                      onClick={() => handleBookNow(accommodation)}
                     >
                       Book Now
                     </Button>
@@ -415,13 +438,30 @@ const Hotels = () => {
                 </div>
               </CardContent>
             </Card>
+            ))}
+            
+            {filteredAndSortedAccommodations.length === 0 && (
+              <div className="col-span-full text-center py-12">
+                <div className="text-gray-500 dark:text-gray-400">
+                  No accommodations found matching your criteria.
+                </div>
+                <Button 
+                  variant="outline" 
+                  className="mt-4"
+                  onClick={() => {
+                    setSearchQuery('');
+                    setFilterType('all');
+                  }}
+                >
+                  Clear Filters
+                </Button>
+              </div>
+            )}
           </div>
 
           {/* Reviews Section */}
           <div className="mt-16">
             <ReviewsRatings
-              itemId="1"
-              itemType="hotel"
               averageRating={4.7}
               totalReviews={234}
               reviews={sampleReviews}

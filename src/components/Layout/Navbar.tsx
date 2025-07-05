@@ -3,18 +3,18 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { signIn, signOut, useSession } from "next-auth/react";
+import { signOut, useSession } from "next-auth/react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Search, Menu, X, User, Bell, LogOut, Settings, HelpCircle, Package, Home, MapPin, Users, Briefcase, ChevronDown, ChevronUp, ChevronRight, Phone, Mail } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { Search, Menu, X, User, Bell, LogOut, HelpCircle, Package, Home, MapPin, Phone, Mail } from "lucide-react";
+
 import { Badge } from "@/components/ui/badge";
 import { ThemeToggle } from "@/components/theme-toggle";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
-  DropdownMenuLabel,
+
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
@@ -33,7 +33,7 @@ const Navbar = () => {
   const [isScrolled, setIsScrolled] = useState(false);
   const router = useRouter();
   const pathname = usePathname();
-  const { data: session, status } = useSession();
+  const { data: session } = useSession();
   const user = session?.user as User | undefined;
 
   useEffect(() => {

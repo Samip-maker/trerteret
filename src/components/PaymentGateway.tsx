@@ -6,7 +6,6 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { CreditCard, Lock, Shield, CheckCircle } from "lucide-react";
-import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
 
 interface PaymentGatewayProps {
@@ -29,7 +28,6 @@ const PaymentGateway = ({ amount, bookingDetails, onPaymentSuccess, onCancel }: 
     cvv: '',
     name: ''
   });
-  const router = useRouter();
 
   const handlePayment = async () => {
     setIsProcessing(true);

@@ -1,14 +1,14 @@
 
 import { useState } from "react";
+import Image from "next/image";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import Navbar from "@/components/Layout/Navbar";
 import Footer from "@/components/Layout/Footer";
 import {
   Bell,
-  Package,
   Percent,
   Calendar,
   CheckCircle,
@@ -242,11 +242,15 @@ const Notifications = () => {
                 <Card key={offer.id} className="overflow-hidden hover:shadow-xl transition-all duration-300">
                   <div className="md:flex">
                     <div className="md:w-1/3">
-                      <img
-                        src={`https://images.unsplash.com/${offer.image}?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80`}
-                        alt={offer.title}
-                        className="w-full h-48 md:h-full object-cover"
-                      />
+                      <div className="relative w-full h-48 md:h-full">
+                        <Image
+                          src={`https://images.unsplash.com/${offer.image}?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80`}
+                          alt={offer.title}
+                          fill
+                          sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                          className="object-cover"
+                        />
+                      </div>
                     </div>
                     <div className="md:w-2/3 p-6">
                       <div className="flex items-start justify-between">

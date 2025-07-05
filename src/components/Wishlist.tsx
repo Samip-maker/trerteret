@@ -3,7 +3,8 @@ import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Heart, Share2, Star, MapPin, Calendar, Users, Trash2 } from "lucide-react";
+import { Heart, Share2, Star, MapPin, Calendar, Trash2 } from "lucide-react";
+import Image from "next/image";
 import { useToast } from "@/hooks/use-toast";
 
 interface WishlistItem {
@@ -134,11 +135,16 @@ const Wishlist = ({ items, onRemoveItem, onBookNow }: WishlistProps) => {
             <CardContent className="p-0">
               <div className="md:flex">
                 <div className="relative md:w-80">
-                  <img
-                    src={`https://images.unsplash.com/${item.image}?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80`}
-                    alt={item.name}
-                    className="w-full h-48 md:h-full object-cover"
-                  />
+                  <div className="relative w-full h-48 md:h-full">
+                    <Image
+                      src={`https://images.unsplash.com/${item.image}?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80`}
+                      alt={item.name}
+                      fill
+                      sizes="(max-width: 768px) 100vw, 320px"
+                      className="object-cover"
+                      priority={false}
+                    />
+                  </div>
                   <div className="absolute top-3 left-3">
                     <Badge className={`${item.type === 'package' ? 'bg-blue-600' : 'bg-green-600'} text-white`}>
                       {item.type === 'package' ? 'Package' : 'Hotel'}

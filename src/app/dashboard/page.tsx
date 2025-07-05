@@ -6,7 +6,7 @@ import { useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
-import { Loader2, Package, Calendar, Heart } from "lucide-react";
+import { Loader2 } from "lucide-react";
 
 export default function DashboardPage() {
   const { data: session, status } = useSession();
@@ -144,7 +144,7 @@ export default function DashboardPage() {
               <ul className="text-sm text-gray-500 dark:text-gray-400 space-y-2">
                 <li>Booked flight to London (Oct 10, 2024)</li>
                 <li>Updated profile picture (Oct 08, 2024)</li>
-                <li>Viewed "Tropical Getaways" package (Oct 07, 2024)</li>
+                <li>Viewed &quot;Tropical Getaways&quot; package (Oct 07, 2024)</li>
               </ul>
             </CardContent>
           </Card>

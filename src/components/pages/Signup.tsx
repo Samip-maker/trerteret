@@ -2,31 +2,25 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Mail, Lock, Eye, EyeOff, User, Phone, ArrowRight, Sparkles } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import { useAuth, type Role } from "@/contexts/AuthContext";
+import { useAuth, type Role, type SignUpCredentials } from "@/contexts/AuthContext";
 
-interface FormData {
-  name: string;
-  email: string;
-  phone: string;
-  password: string;
+interface FormData extends Omit<SignUpCredentials, 'redirectTo'> {
   confirmPassword: string;
-  role?: string;
 }
 
 const Signup = () => {
-  const router = useRouter();
   const searchParams = useSearchParams();
   const { toast } = useToast();
   const { signUp } = useAuth();
   const from = searchParams.get("from") || "/";
-  const role = (searchParams.get("role") as Role) || "user";
+  const role = (searchParams.get("role") as Role | undefined) || "user";
 
   const [formData, setFormData] = useState<FormData>({
     name: "",
@@ -50,25 +44,7 @@ const Signup = () => {
   const handleSignup = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     
-    // Basic validation
-    if (!formData.name || !formData.email || !formData.password || !formData.confirmPassword) {
-      toast({
-        title: "Error",
-        description: "Please fill in all required fields",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    if (formData.password.length < 6) {
-      toast({ 
-        title: "Registration Failed", 
-        description: "Password must be at least 6 characters long.",
-        variant: "destructive"
-      });
-      return;
-    }
-
+    // Validate passwords match
     if (formData.password !== formData.confirmPassword) {
       toast({
         title: "Error",
@@ -78,28 +54,43 @@ const Signup = () => {
       return;
     }
 
+    // Validate password length
+    if (formData.password.length < 6) {
+      toast({
+        title: "Error",
+        description: "Password must be at least 6 characters long",
+        variant: "destructive",
+      });
+      return;
+    }
+
     try {
       setIsLoading(true);
       
-      // Call the signUp function from AuthContext
-      await signUp({
-        name: formData.name,
-        email: formData.email,
-        phone: formData.phone,
+      // Prepare the signup data with proper types
+      const signUpData: SignUpCredentials = {
+        name: formData.name.trim(),
+        email: formData.email.trim().toLowerCase(),
         password: formData.password,
+        phone: formData.phone?.trim(),
         role: role,
         redirectTo: from,
-      });
-
+        rememberMe: false
+      };
+      
+      // Call the signup function from the auth context
+      await signUp(signUpData);
+      
+      // Show success message (handled by auth context)
+    } catch (err) {
+      console.error("Signup error:", err);
+      
+      // Handle error with proper type checking
+      const errorMessage = err instanceof Error ? err.message : "An error occurred during signup";
+      
       toast({
-        title: "Success!",
-        description: "Your account has been created successfully.",
-      });
-    } catch (error: any) {
-      console.error("Signup error:", error);
-      toast({
-        title: "Error",
-        description: error.message || "An error occurred during signup",
+        title: "Signup failed",
+        description: errorMessage,
         variant: "destructive",
       });
     } finally {

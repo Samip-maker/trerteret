@@ -8,10 +8,10 @@ interface ProtectedRouteProps {
 }
 
 export const ProtectedRoute = ({ children, requiredRole = 'user' }: ProtectedRouteProps) => {
-  const { user, loading, isAuthenticated } = useAuth();
+  const { user, isLoading } = useAuth();
   const location = useLocation();
 
-  if (loading) {
+  if (isLoading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <Loader2 className="h-12 w-12 animate-spin text-primary" />
@@ -19,9 +19,9 @@ export const ProtectedRoute = ({ children, requiredRole = 'user' }: ProtectedRou
     );
   }
 
-  if (!isAuthenticated) {
+  if (!user) {
     // Redirect to login page, but save the current location they were trying to go to
-    return <Navigate to="/login" state={{ from: location }} replace />;
+    return <Navigate to="/auth/signin" state={{ from: location }} replace />;
   }
 
   // Check if user has the required role

@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -18,7 +18,6 @@ const Login = () => {
   const [rememberMe, setRememberMe] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
-  const router = useRouter();
   const searchParams = useSearchParams();
   const { signIn } = useAuth();
   const from = searchParams.get("from") || "/";
@@ -184,7 +183,7 @@ const Login = () => {
             </form>
 
             <div className="mt-6 text-center">
-              <span className="text-gray-300">Don't have an account? </span>
+              <span className="text-gray-300">Don&apos;t have an account? </span>
               <Link href="/signup" className="text-green-400 hover:text-green-300 font-semibold">
                 Sign up now
               </Link>
@@ -209,13 +208,13 @@ const Login = () => {
             className="text-center space-y-6"
           >
             <Mountain className="h-16 w-16 mx-auto text-green-400 animate-pulse" />
-            <h2 className="text-5xl font-bold leading-tight">
+            <span className="text-5xl font-bold leading-tight">
               Discover
               <br />
               <span className="bg-gradient-to-r from-yellow-400 to-orange-400 bg-clip-text text-transparent">
-                Sikkim's Magic
+                Sikkim&apos;s Magic
               </span>
-            </h2>
+            </span>
             <p className="text-xl text-blue-100 max-w-md">
               Embark on extraordinary journeys through mystical landscapes and ancient cultures
             </p>

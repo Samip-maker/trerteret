@@ -3,6 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
+import Image from "next/image";
 import { Bot, MessageCircle, TrendingUp, MapPin, Calendar, Sparkles } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
@@ -130,11 +131,16 @@ const AIFeatures = () => {
           {recommendations.map((rec, index) => (
             <div key={index} className="border border-gray-200 dark:border-gray-700 rounded-lg p-4">
               <div className="flex space-x-4">
-                <img
-                  src={`https://images.unsplash.com/${rec.image}?ixlib=rb-4.0.3&auto=format&fit=crop&w=200&q=80`}
-                  alt={rec.title}
-                  className="w-20 h-20 rounded-lg object-cover"
-                />
+                <div className="relative w-20 h-20 rounded-lg overflow-hidden">
+                  <Image
+                    src={`https://images.unsplash.com/${rec.image}?ixlib=rb-4.0.3&auto=format&fit=crop&w=200&q=80`}
+                    alt={rec.title}
+                    fill
+                    sizes="(max-width: 80px) 100vw, 80px"
+                    className="object-cover"
+                    priority={index < 3} // Only prioritize first 3 images
+                  />
+                </div>
                 <div className="flex-1">
                   <div className="flex items-start justify-between">
                     <div>

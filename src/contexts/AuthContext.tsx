@@ -1,19 +1,16 @@
 'use client';
 
-import { createContext, useState, useContext, useEffect, ReactNode } from 'react';
+import { createContext, useState, useContext, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { signIn as nextAuthSignIn, signOut as nextAuthSignOut, useSession } from 'next-auth/react';
-import { getSession } from 'next-auth/react';
+import type { User } from 'next-auth';
 
 type Role = 'user' | 'partner' | 'admin';
 
-interface User {
-  id: string;
-  name?: string | null;
-  email?: string | null;
-  image?: string | null;
+// Extend the User type from next-auth
+type ExtendedUser = User & {
   role: Role;
-}
+};
 
 interface SignInCredentials {
   email: string;
@@ -30,7 +27,7 @@ interface SignUpCredentials extends SignInCredentials {
 }
 
 interface AuthContextType {
-  user: User | null;
+  user: ExtendedUser | null;
   isLoading: boolean;
   signIn: (credentials: SignInCredentials) => Promise<void>;
   signUp: (credentials: SignUpCredentials) => Promise<void>;
@@ -47,88 +44,58 @@ const AuthContext = createContext<AuthContextType>({
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const { data: session, status } = useSession();
-  const [user, setUser] = useState<User | null>(null);
+  const [user, setUser] = useState<ExtendedUser | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const router = useRouter();
 
-  const signIn = async ({ email, password, rememberMe = false, redirectTo }: SignInCredentials) => {
+  const signIn = async ({ email, password, rememberMe, redirectTo = '/' }: SignInCredentials) => {
     try {
+      setIsLoading(true);
       console.log('Attempting sign in for:', email, { rememberMe });
       
-      // Determine the default redirect URL based on user role
-      const getDefaultRedirectUrl = (role: string) => {
-        switch (role) {
-          case 'admin':
-            return '/admin/dashboard';
-          case 'partner':
-            return '/partner/dashboard';
-          case 'user':
-          default:
-            return '/dashboard';
-        }
-      };
-
+      // Ensure redirectTo is always a string
+      const safeRedirectTo = redirectTo || '/';
+      
       const result = await nextAuthSignIn('credentials', {
         redirect: false,
         email,
         password,
         rememberMe,
-        callbackUrl: redirectTo || getDefaultRedirectUrl('user'), // Default to user dashboard
-      });
-
-      console.log('Sign in result:', { 
-        success: !result?.error, 
-        error: result?.error,
-        url: result?.url,
-        defaultUrl: redirectTo || getDefaultRedirectUrl('user')
+        callbackUrl: safeRedirectTo,
       });
 
       if (result?.error) {
         throw new Error(result.error);
       }
 
-      // Get the user's role from the result URL or use default
-      let finalUrl = result?.url || '';
-      
-      // If we don't have a URL from NextAuth, use our default based on role
-      if (!finalUrl) {
-        // Get the current session to determine the user's role
-        const session = await getSession();
-        const userRole = (session?.user as any)?.role || 'user';
-        finalUrl = getDefaultRedirectUrl(userRole);
-      }
-      
-      console.log('Final redirect URL:', finalUrl);
-
-      // Ensure we have a valid URL
-      if (finalUrl) {
-        // Ensure we're not already on the target page to prevent infinite redirects
-        const targetPath = new URL(finalUrl, window.location.origin).pathname;
-        if (window.location.pathname !== targetPath) {
-          router.push(finalUrl);
-        }
+      if (result?.url) {
+        router.push(result.url);
       } else {
-        // Fallback to dashboard if no URL is determined
-        router.push('/dashboard');
+        router.push(safeRedirectTo);
       }
-    } catch (error: any) {
-      console.error('Sign in error:', {
-        message: error.message,
-        stack: error.stack,
-        name: error.name
-      });
-      
-      // Rethrow with a more user-friendly message
-      const errorMessage = error.message.includes('CredentialsSignin') 
-        ? 'Invalid email or password'
-        : error.message || 'An error occurred during sign in';
-      
-      throw new Error(errorMessage);
+      router.refresh();
+    } catch (error) {
+      console.error('Sign in error:', error);
+      throw error;
+    } finally {
+      setIsLoading(false);
     }
   };
 
-  const signUp = async ({ name, email, password, phone, employeeId, role = 'user', redirectTo = '/' }: SignUpCredentials) => {
+  const signUp = async (credentials: SignUpCredentials) => {
     try {
+      setIsLoading(true);
+      const { 
+        name, 
+        email, 
+        password, 
+        phone, 
+        role = 'user', 
+        employeeId, 
+        rememberMe = false,
+        redirectTo = '/'
+      } = credentials;
+
       console.log('Attempting to sign up user:', { email, role });
       
       // Call the signup API endpoint
@@ -156,16 +123,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
       // After successful signup, sign in the user
       try {
-        await signIn({ email, password, redirectTo });
+        await signIn({ email, password, redirectTo, rememberMe });
         return data.user;
       } catch (signInError) {
         console.error('Auto sign-in after signup failed:', signInError);
         // Even if auto sign-in fails, the account was created successfully
         // Redirect to login page with success message
-        router.push(`/login?message=Account created successfully! Please sign in.`);
+        router.push(`/auth/signin?message=Account created successfully! Please sign in.`);
         return data.user;
       }
-    } catch (error: any) {
+    } catch (err) {
+      const error = err instanceof Error ? err : new Error('An unknown error occurred');
       console.error('Sign up error:', error);
       throw new Error(error.message || 'An error occurred during signup. Please try again.');
     }
@@ -173,29 +141,43 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const signOut = async () => {
     try {
-      await nextAuthSignOut({ redirect: false });
+      setIsLoading(true);
+      await nextAuthSignOut({ 
+        redirect: false,
+        callbackUrl: '/auth/signin'
+      });
       setUser(null);
-      router.push('/login');
+      router.push('/auth/signin');
+      router.refresh();
     } catch (error) {
       console.error('Sign out error:', error);
       throw error;
+    } finally {
+      setIsLoading(false);
     }
   };
 
   useEffect(() => {
-    if (status === 'authenticated') {
-      setUser({
-        id: session.user?.id || '',
-        name: session.user?.name,
-        email: session.user?.email,
-        image: session.user?.image,
-        role: (session.user?.role as Role) || 'user',
-      });
-    } else if (status === 'unauthenticated') {
-      setUser(null);
-    }
-    setIsLoading(status === 'loading');
-  }, [session, status]);
+    const checkSession = async () => {
+      try {
+        if (status === 'authenticated' && session?.user) {
+          setUser({
+            ...session.user,
+            role: (session.user.role as Role) || 'user',
+          });
+        } else if (status === 'unauthenticated') {
+          setUser(null);
+        }
+      } catch (error) {
+        console.error('Error checking session:', error);
+        setUser(null);
+      } finally {
+        setIsLoading(status === 'loading');
+      }
+    };
+
+    checkSession();
+  }, [status, session]);
 
   return (
     <AuthContext.Provider value={{ user, isLoading, signIn, signUp, signOut }}>
@@ -204,6 +186,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   );
 }
 
+// Export the auth hook
 export const useAuth = () => {
   const context = useContext(AuthContext);
   if (context === undefined) {
@@ -212,5 +195,13 @@ export const useAuth = () => {
   return context;
 };
 
-export type { Role, SignUpCredentials };
+// Export types
+export type { 
+  Role, 
+  SignUpCredentials, 
+  SignInCredentials, 
+  ExtendedUser as User,
+  AuthContextType 
+};
+
 export default AuthContext;

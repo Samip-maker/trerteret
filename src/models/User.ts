@@ -54,8 +54,13 @@ userSchema.pre('save', async function (next) {
     const salt = await bcrypt.genSalt(10);
     this.password = await bcrypt.hash(this.password, salt);
     next();
-  } catch (error: any) {
-    next(error);
+  } catch (error: unknown) {
+    if (error instanceof Error) {
+      next(error);
+    } else {
+      // For non-Error thrown values, create a new Error
+      next(new Error('An unknown error occurred while hashing the password'));
+    }
   }
 });
 

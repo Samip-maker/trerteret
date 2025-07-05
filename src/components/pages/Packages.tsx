@@ -8,18 +8,8 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import Navbar from "@/components/Layout/Navbar";
 import Footer from "@/components/Layout/Footer";
-import {
-  MapPin,
-  Star,
-  Calendar,
-  Users,
-  Heart,
-  Filter,
-  Search,
-  Mountain,
-  Camera,
-  Snowflake
-} from "lucide-react";
+import { MapPin, Star, Users, Heart, Filter, Search, Mountain } from "lucide-react";
+import Image from "next/image";
 
 const Packages = () => {
   const [searchQuery, setSearchQuery] = useState("");
@@ -222,11 +212,16 @@ const Packages = () => {
             {sortedPackages.map((pkg, index) => (
               <Card key={pkg.id} className="overflow-hidden hover:shadow-xl transition-all duration-300 group hover-lift bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 animate-fade-in-up" style={{animationDelay: `${index * 0.1}s`}}>
                 <div className="relative">
-                  <img
-                    src={`https://images.unsplash.com/${pkg.image}?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80`}
-                    alt={pkg.title}
-                    className="w-full h-48 object-cover group-hover:scale-105 transition-transform duration-300"
-                  />
+                  <div className="relative w-full h-48 overflow-hidden">
+                    <Image
+                      src={`https://images.unsplash.com/${pkg.image}?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80`}
+                      alt={pkg.title}
+                      fill
+                      sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                      className="object-cover group-hover:scale-105 transition-transform duration-300"
+                      priority={index < 3} // Only prioritize first 3 images for better performance
+                    />
+                  </div>
                   <Badge className="absolute top-3 left-3 bg-green-600 text-white">
                     {pkg.category}
                   </Badge>

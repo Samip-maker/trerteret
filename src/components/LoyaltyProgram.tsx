@@ -15,8 +15,8 @@ interface LoyaltyTier {
 }
 
 const LoyaltyProgram = () => {
-  const [currentPoints, setCurrentPoints] = useState(2750);
-  const [currentTier, setCurrentTier] = useState('Silver');
+  const [currentPoints] = useState(2750);
+  const [currentTier] = useState('Silver');
   const [referralCode] = useState('SKM2024');
 
   const tiers: LoyaltyTier[] = [
@@ -111,7 +111,7 @@ const LoyaltyProgram = () => {
         </CardHeader>
         <CardContent>
           <div className="grid gap-4">
-            {tiers.map((tier, index) => (
+            {tiers.map((tier) => (
               <div
                 key={tier.name}
                 className={`p-4 rounded-lg border-2 ${

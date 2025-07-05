@@ -10,16 +10,14 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import Navbar from "@/components/Layout/Navbar";
 import Footer from "@/components/Layout/Footer";
 import {
-  User,
   MapPin,
   Calendar,
   Star,
   Heart,
   Camera,
-  Edit,
-  Package,
-  CreditCard
+  Edit
 } from "lucide-react";
+import Image from "next/image";
 
 const UserProfile = () => {
   const [activeTab, setActiveTab] = useState("profile");
@@ -207,11 +205,15 @@ const UserProfile = () => {
                 <Card key={booking.id}>
                   <CardContent className="p-6">
                     <div className="flex items-center space-x-4">
-                      <img
-                        src={`https://images.unsplash.com/${booking.image}?ixlib=rb-4.0.3&auto=format&fit=crop&w=200&q=80`}
-                        alt={booking.title}
-                        className="w-20 h-20 rounded-lg object-cover"
-                      />
+                      <div className="relative w-20 h-20">
+                        <Image
+                          src={`https://images.unsplash.com/${booking.image}?ixlib=rb-4.0.3&auto=format&fit=crop&w=200&q=80`}
+                          alt={booking.title}
+                          fill
+                          className="rounded-lg object-cover"
+                          sizes="80px"
+                        />
+                      </div>
                       <div className="flex-1">
                         <div className="flex items-center justify-between">
                           <div>
@@ -262,11 +264,15 @@ const UserProfile = () => {
               {wishlistItems.map((item) => (
                 <Card key={item.id} className="overflow-hidden">
                   <div className="relative">
-                    <img
-                      src={`https://images.unsplash.com/${item.image}?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80`}
-                      alt={item.title}
-                      className="w-full h-40 object-cover"
-                    />
+                    <div className="relative w-full h-40">
+                      <Image
+                        src={`https://images.unsplash.com/${item.image}?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80`}
+                        alt={item.title}
+                        fill
+                        className="object-cover"
+                        sizes="(max-width: 768px) 100vw, 400px"
+                      />
+                    </div>
                     <Button
                       variant="ghost"
                       size="sm"
@@ -301,7 +307,7 @@ const UserProfile = () => {
             <Card>
               <CardHeader>
                 <CardTitle>My Reviews</CardTitle>
-                <CardDescription>Reviews you've written for bookings</CardDescription>
+                <CardDescription>Reviews you&apos;ve written for bookings</CardDescription>
               </CardHeader>
               <CardContent>
                 <div className="text-center py-12">

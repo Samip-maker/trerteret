@@ -5,7 +5,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
-import { Heart, MessageCircle, Share2, Users, Camera, MapPin, Calendar } from "lucide-react";
+import { Heart, MessageCircle, Share2, Users, Camera, MapPin } from "lucide-react";
+import Image from 'next/image';
 
 interface TravelPost {
   id: string;
@@ -128,11 +129,15 @@ const SocialFeatures = () => {
 
               {/* Post Image */}
               <div className="mb-4 rounded-lg overflow-hidden">
-                <img
-                  src={`https://images.unsplash.com/${post.image}?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80`}
-                  alt="Travel post"
-                  className="w-full h-64 object-cover"
-                />
+                <div className="relative w-full h-64">
+                  <Image
+                    src={`https://images.unsplash.com/${post.image}?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80`}
+                    alt="Travel post"
+                    fill
+                    className="object-cover"
+                    sizes="(max-width: 768px) 100vw, 800px"
+                  />
+                </div>
               </div>
 
               {/* Tags */}

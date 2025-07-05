@@ -4,7 +4,7 @@ import './globals.css';
 import { Providers } from './providers';
 import { Toaster } from '@/components/ui/client-toaster';
 import { getServerSession } from 'next-auth';
-import { authOptions } from './api/auth/[...nextauth]/route';
+import { authConfig } from '@/lib/auth.config';
 
 const inter = Inter({ subsets: ['latin'] });
 
@@ -21,7 +21,7 @@ export default async function RootLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const session = await getServerSession(authOptions);
+  const session = await getServerSession(authConfig);
   
   return (
     <html lang="en" suppressHydrationWarning>

@@ -7,17 +7,12 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
-import { Badge } from "@/components/ui/badge";
 import {
   Building,
   User,
-  Mail,
-  Phone,
-  MapPin,
   FileText,
   CheckCircle,
   ArrowLeft,
-  CreditCard,
   Shield
 } from "lucide-react";
 
@@ -318,7 +313,7 @@ const AdminPartnerCreation = () => {
                 <li>• Partner account will be created with the provided details</li>
                 <li>• Login credentials will be sent to the provided email address</li>
                 <li>• Partner can complete their profile and start adding services</li>
-                <li>• Account will be marked as "Pending Verification" until documents are reviewed</li>
+                <li>• Account will be marked as &quot;Pending Verification&quot; until documents are reviewed</li>
               </ul>
             </div>
           </div>

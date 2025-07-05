@@ -1,9 +1,9 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Star, Clock, Users, MapPin, Camera, Utensils, Mountain } from "lucide-react";
+import Image from "next/image";
 
 interface Experience {
   id: string;
@@ -134,11 +134,14 @@ const LocalExperiences = () => {
           <Card key={experience.id} className="bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 overflow-hidden">
             <CardContent className="p-0">
               <div className="md:flex">
-                <div className="relative md:w-80">
-                  <img
+                <div className="relative md:w-80 h-48 md:h-full">
+                  <Image
                     src={`https://images.unsplash.com/${experience.image}?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80`}
                     alt={experience.title}
-                    className="w-full h-48 md:h-full object-cover"
+                    fill
+                    sizes="(max-width: 768px) 100vw, 320px"
+                    className="object-cover"
+                    priority
                   />
                   <div className="absolute top-3 left-3">
                     <Badge className={getCategoryColor(experience.category)}>
@@ -181,11 +184,15 @@ const LocalExperiences = () => {
 
                   {/* Guide Info */}
                   <div className="flex items-center space-x-3 mb-4 p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
-                    <img
-                      src={`https://images.unsplash.com/${experience.guide.avatar}?ixlib=rb-4.0.3&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80`}
-                      alt={experience.guide.name}
-                      className="w-10 h-10 rounded-full"
-                    />
+                    <div className="relative w-10 h-10">
+                      <Image
+                        src={`https://images.unsplash.com/${experience.guide.avatar}?ixlib=rb-4.0.3&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80`}
+                        alt={experience.guide.name}
+                        fill
+                        sizes="40px"
+                        className="rounded-full object-cover"
+                      />
+                    </div>
                     <div className="flex-1">
                       <p className="font-semibold text-gray-900 dark:text-white">{experience.guide.name}</p>
                       <div className="flex items-center space-x-2">
@@ -201,7 +208,7 @@ const LocalExperiences = () => {
 
                   {/* Highlights */}
                   <div className="mb-4">
-                    <h4 className="font-semibold text-gray-900 dark:text-white mb-2">What's included:</h4>
+                    <h4 className="font-semibold text-gray-900 dark:text-white mb-2">What&apos;s included:</h4>
                     <div className="grid grid-cols-2 gap-1">
                       {experience.highlights.map((highlight, index) => (
                         <div key={index} className="flex items-center space-x-2 text-sm text-gray-600 dark:text-gray-400">

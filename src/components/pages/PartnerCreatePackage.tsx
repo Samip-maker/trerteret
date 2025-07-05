@@ -1,6 +1,6 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
-import { useForm } from "react-hook-form";
+import { useRouter } from "next/navigation";
+import { useForm, SubmitHandler } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { Button } from "@/components/ui/button";
@@ -13,16 +13,16 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { useToast } from "@/hooks/use-toast";
 import { 
   Calendar, 
-  Image, 
   MapPin, 
   Clock, 
   Users, 
-  DollarSign, 
-  Tag, 
+  DollarSign,
   Plus, 
+  Tag, 
   X,
   Loader2
 } from "lucide-react";
+import Image from "next/image";
 
 const packageFormSchema = z.object({
   title: z.string().min(5, { message: "Title must be at least 5 characters" }),
@@ -44,7 +44,7 @@ const packageFormSchema = z.object({
   isActive: z.boolean().default(true)
 });
 
-type PackageFormValues = z.infer<typeof packageFormSchema>;
+
 
 export default function PartnerCreatePackage() {
   const [isLoading, setIsLoading] = useState(false);
@@ -53,10 +53,12 @@ export default function PartnerCreatePackage() {
   const [excludedInput, setExcludedInput] = useState("");
   const [imageInput, setImageInput] = useState("");
   const { toast } = useToast();
-  const navigate = useNavigate();
+  const router = useRouter();
 
-  const form = useForm<PackageFormValues>({
-    resolver: zodResolver(packageFormSchema),
+    type FormData = z.infer<typeof packageFormSchema>;
+
+  const form = useForm<FormData>({
+    resolver: zodResolver(packageFormSchema) as never,
     defaultValues: {
       title: "",
       description: "",
@@ -77,7 +79,7 @@ export default function PartnerCreatePackage() {
     }
   });
 
-  const onSubmit = async (data: PackageFormValues) => {
+  const onSubmit: SubmitHandler<FormData> = async (data) => {
     try {
       setIsLoading(true);
       // TODO: Replace with actual API call
@@ -89,7 +91,7 @@ export default function PartnerCreatePackage() {
       });
       
       // Redirect to packages list
-      navigate("/partner/packages");
+      router.push("/partner/packages");
     } catch (error) {
       console.error("Error creating package:", error);
       toast({
@@ -102,8 +104,10 @@ export default function PartnerCreatePackage() {
     }
   };
 
+
+
   const addHighlight = () => {
-    if (highlightInput.trim() && !form.getValues("highlights").includes(highlightInput)) {
+    if (highlightInput.trim()) {
       const currentHighlights = form.getValues("highlights") || [];
       form.setValue("highlights", [...currentHighlights, highlightInput.trim()]);
       setHighlightInput("");
@@ -111,13 +115,12 @@ export default function PartnerCreatePackage() {
   };
 
   const removeHighlight = (index: number) => {
-    const highlights = [...form.getValues("highlights")];
-    highlights.splice(index, 1);
-    form.setValue("highlights", highlights);
+    const currentHighlights = form.getValues("highlights") || [];
+    form.setValue("highlights", currentHighlights.filter((_, i) => i !== index));
   };
 
   const addIncluded = () => {
-    if (includedInput.trim() && !form.getValues("included").includes(includedInput)) {
+    if (includedInput.trim()) {
       const currentIncluded = form.getValues("included") || [];
       form.setValue("included", [...currentIncluded, includedInput.trim()]);
       setIncludedInput("");
@@ -125,13 +128,12 @@ export default function PartnerCreatePackage() {
   };
 
   const removeIncluded = (index: number) => {
-    const included = [...form.getValues("included")];
-    included.splice(index, 1);
-    form.setValue("included", included);
+    const currentIncluded = form.getValues("included") || [];
+    form.setValue("included", currentIncluded.filter((_, i) => i !== index));
   };
 
   const addExcluded = () => {
-    if (excludedInput.trim() && !form.getValues("excluded").includes(excludedInput)) {
+    if (excludedInput.trim()) {
       const currentExcluded = form.getValues("excluded") || [];
       form.setValue("excluded", [...currentExcluded, excludedInput.trim()]);
       setExcludedInput("");
@@ -139,13 +141,12 @@ export default function PartnerCreatePackage() {
   };
 
   const removeExcluded = (index: number) => {
-    const excluded = [...form.getValues("excluded")];
-    excluded.splice(index, 1);
-    form.setValue("excluded", excluded);
+    const currentExcluded = form.getValues("excluded") || [];
+    form.setValue("excluded", currentExcluded.filter((_, i) => i !== index));
   };
 
   const addImage = () => {
-    if (imageInput.trim() && !form.getValues("images").includes(imageInput)) {
+    if (imageInput.trim()) {
       const currentImages = form.getValues("images") || [];
       form.setValue("images", [...currentImages, imageInput.trim()]);
       setImageInput("");
@@ -153,9 +154,8 @@ export default function PartnerCreatePackage() {
   };
 
   const removeImage = (index: number) => {
-    const images = [...form.getValues("images")];
-    images.splice(index, 1);
-    form.setValue("images", images);
+    const currentImages = form.getValues("images") || [];
+    form.setValue("images", currentImages.filter((_, i) => i !== index));
   };
 
   return (
@@ -167,7 +167,7 @@ export default function PartnerCreatePackage() {
         </div>
         <Button 
           variant="outline" 
-          onClick={() => navigate(-1)}
+          onClick={() => router.back()}
           disabled={isLoading}
         >
           Cancel
@@ -429,7 +429,7 @@ export default function PartnerCreatePackage() {
                 
                 {form.getValues("highlights")?.length > 0 && (
                   <div className="space-y-2">
-                    {form.getValues("highlights").map((highlight, index) => (
+                    {form.getValues("highlights").map((highlight: string, index: number) => (
                       <div key={index} className="flex items-center justify-between p-2 bg-muted/50 rounded-md">
                         <span>{highlight}</span>
                         <Button 
@@ -450,8 +450,8 @@ export default function PartnerCreatePackage() {
 
           <Card>
             <CardHeader>
-              <CardTitle>What's Included</CardTitle>
-              <CardDescription>List what's included in the package</CardDescription>
+              <CardTitle>What&apos;s Included</CardTitle>
+              <CardDescription>List what&apos;s included in the package</CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
               <div className="space-y-4">
@@ -469,7 +469,7 @@ export default function PartnerCreatePackage() {
                 
                 {form.getValues("included")?.length > 0 && (
                   <div className="space-y-2">
-                    {form.getValues("included").map((item, index) => (
+                    {form.getValues("included").map((item: string, index: number) => (
                       <div key={index} className="flex items-center justify-between p-2 bg-muted/50 rounded-md">
                         <span>{item}</span>
                         <Button 
@@ -487,7 +487,7 @@ export default function PartnerCreatePackage() {
               </div>
 
               <div className="space-y-4">
-                <h4 className="text-sm font-medium">What's Not Included (optional)</h4>
+                <h4 className="text-sm font-medium">What&apos;s Not Included (optional)</h4>
                 <div className="flex gap-2">
                   <Input 
                     placeholder="e.g., Personal expenses" 
@@ -502,7 +502,7 @@ export default function PartnerCreatePackage() {
                 
                 {form.getValues("excluded")?.length > 0 && (
                   <div className="space-y-2">
-                    {form.getValues("excluded").map((item, index) => (
+                    {form.getValues("excluded").map((item: string, index: number) => (
                       <div key={index} className="flex items-center justify-between p-2 bg-muted/50 rounded-md">
                         <span>{item}</span>
                         <Button 
@@ -536,19 +536,24 @@ export default function PartnerCreatePackage() {
                     onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), addImage())}
                   />
                   <Button type="button" onClick={addImage}>
-                    <Image className="h-4 w-4 mr-2" /> Add Image
+                    <Plus className="h-4 w-4 mr-2" /> Add Image
                   </Button>
                 </div>
                 
                 {form.getValues("images")?.length > 0 ? (
                   <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-                    {form.getValues("images").map((image, index) => (
+                    {form.getValues("images").map((image: string, index: number) => (
                       <div key={index} className="relative group">
-                        <img 
-                          src={image} 
-                          alt={`Package image ${index + 1}`} 
-                          className="h-32 w-full object-cover rounded-md"
-                        />
+                        <div className="relative h-32 w-full">
+                          <Image 
+                            src={image} 
+                            alt={`Package image ${index + 1}`}
+                            fill
+                            className="object-cover rounded-md"
+                            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                            unoptimized={true}
+                          />
+                        </div>
                         <Button 
                           type="button" 
                           variant="destructive" 
@@ -563,7 +568,13 @@ export default function PartnerCreatePackage() {
                   </div>
                 ) : (
                   <div className="flex flex-col items-center justify-center p-8 border-2 border-dashed rounded-md">
-                    <Image className="h-12 w-12 text-muted-foreground mb-2" />
+                    <Image 
+                      src="/placeholder-image.svg" 
+                      alt="" 
+                      width={48} 
+                      height={48} 
+                      className="h-12 w-12 text-muted-foreground mb-2" 
+                    />
                     <p className="text-sm text-muted-foreground text-center">
                       No images added yet. Add some beautiful images to showcase your package.
                     </p>
@@ -614,7 +625,7 @@ export default function PartnerCreatePackage() {
                       <div className="space-y-1 leading-none">
                         <FormLabel>Make this package active</FormLabel>
                         <FormDescription>
-                          Inactive packages won't be visible to customers.
+                          Inactive packages won&apos;t be visible to customers.
                         </FormDescription>
                       </div>
                     </FormItem>
@@ -628,7 +639,7 @@ export default function PartnerCreatePackage() {
             <Button 
               type="button" 
               variant="outline" 
-              onClick={() => navigate(-1)}
+              onClick={() => router.back()}
               disabled={isLoading}
             >
               Cancel

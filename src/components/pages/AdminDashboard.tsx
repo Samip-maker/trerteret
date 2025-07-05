@@ -15,9 +15,7 @@ import {
   XCircle,
   Eye,
   Edit,
-  Shield,
-  BarChart3,
-  MapPin
+  BarChart3
 } from "lucide-react";
 
 const AdminDashboard = () => {

@@ -15,9 +15,7 @@ import {
   Eye,
   EyeOff,
   Calendar,
-  Percent,
   Gift,
-  Clock,
   Users
 } from "lucide-react";
 
@@ -38,7 +36,7 @@ interface Offer {
 const PartnerOffers = () => {
   const { toast } = useToast();
   const [showCreateForm, setShowCreateForm] = useState(false);
-  const [editingOffer, setEditingOffer] = useState<Offer | null>(null);
+
   const [offers, setOffers] = useState<Offer[]>([
     {
       id: "1",

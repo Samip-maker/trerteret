@@ -10,10 +10,6 @@ import { useToast } from "@/hooks/use-toast";
 import { Badge } from "@/components/ui/badge";
 import {
   Building,
-  User,
-  Mail,
-  Phone,
-  MapPin,
   FileText,
   CheckCircle,
   AlertCircle,

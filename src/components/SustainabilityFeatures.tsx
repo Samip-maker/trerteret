@@ -57,7 +57,7 @@ const SustainabilityFeatures = () => {
         <CardHeader>
           <CardTitle className="text-gray-900 dark:text-white flex items-center gap-2">
             <Leaf className="h-6 w-6 text-green-600" />
-            Your Trip's Carbon Footprint
+            Your Trip&apos;s Carbon Footprint
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
@@ -93,7 +93,7 @@ const SustainabilityFeatures = () => {
           <div className="bg-white dark:bg-gray-800 p-4 rounded-lg">
             <h3 className="font-semibold text-gray-900 dark:text-white mb-2">Offset Your Impact</h3>
             <p className="text-sm text-gray-600 dark:text-gray-400 mb-3">
-              Plant 12 trees to offset your entire trip's carbon footprint
+              Plant 12 trees to offset your entire trip&apos;s carbon footprint
             </p>
             <Button className="w-full bg-green-600 hover:bg-green-700 text-white">
               Offset for ₹500

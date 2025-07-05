@@ -1,7 +1,8 @@
 
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import Image from "next/image";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
@@ -57,7 +58,7 @@ const BookingFlow = () => {
     { id: 4, title: "Confirmation", icon: CheckCircle }
   ];
 
-  const handleInputChange = (field: string, value: any) => {
+  const handleInputChange = (field: string, value: string | number) => {
     if (field.startsWith('contactInfo.')) {
       const contactField = field.split('.')[1];
       setBookingData(prev => ({
@@ -368,11 +369,16 @@ const BookingFlow = () => {
                 <CardTitle>Package Details</CardTitle>
               </CardHeader>
               <CardContent>
-                <img
-                  src={`https://images.unsplash.com/${packageDetails.image}?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80`}
-                  alt={packageDetails.title}
-                  className="w-full h-40 object-cover rounded-lg mb-4"
-                />
+                <div className="relative w-full h-40 rounded-lg mb-4">
+                  <Image
+                    src={`https://images.unsplash.com/${packageDetails.image}?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80`}
+                    alt={packageDetails.title}
+                    fill
+                    sizes="(max-width: 768px) 100vw, 400px"
+                    className="object-cover rounded-lg"
+                    priority
+                  />
+                </div>
                 <h3 className="font-semibold mb-2">{packageDetails.title}</h3>
                 <p className="text-sm text-gray-600 mb-4">{packageDetails.description}</p>
                 
@@ -402,7 +408,7 @@ const BookingFlow = () => {
 
             <Card>
               <CardHeader>
-                <CardTitle className="text-lg">What's Included</CardTitle>
+                <CardTitle className="text-lg">What&apos;s Included</CardTitle>
               </CardHeader>
               <CardContent>
                 <ul className="space-y-2">

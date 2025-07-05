@@ -2,108 +2,102 @@
 
 import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
-import { motion, useScroll, useTransform } from "framer-motion";
+import { motion, useScroll, useTransform, MotionValue } from 'framer-motion';
 import Navbar from "@/components/Layout/Navbar";
 import Footer from "@/components/Layout/Footer";
-import { Loader2, MapPin, Star, Users, Calendar, Shield, Zap, Heart, TrendingUp, Globe, Coffee, Mountain, Sparkles, ArrowRight } from "lucide-react";
+import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import Link from "next/link";
+import Image from "next/image";
+import { Calendar, MapPin, Star, Users, Globe, TrendingUp, Mountain, ArrowRight, Heart, Loader2 } from 'lucide-react';
 
-// Skeleton Loader Component
-const SkeletonLoader = () => (
-  <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
-    <div className="h-20 bg-white dark:bg-gray-800 shadow-sm animate-pulse"></div>
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-        {[1, 2, 3].map((i) => (
-          <div key={i} className="bg-white dark:bg-gray-800 rounded-lg shadow overflow-hidden">
-            <div className="h-48 bg-gray-200 dark:bg-gray-700 animate-pulse"></div>
-            <div className="p-6">
-              <div className="h-6 bg-gray-200 dark:bg-gray-700 rounded w-3/4 mb-4 animate-pulse"></div>
-              <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-full mb-2 animate-pulse"></div>
-              <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-5/6 mb-4 animate-pulse"></div>
-              <div className="flex justify-between items-center">
-                <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-1/3 animate-pulse"></div>
-                <div className="h-10 bg-gray-200 dark:bg-gray-700 rounded w-1/3 animate-pulse"></div>
-              </div>
-            </div>
-          </div>
-        ))}
-      </div>
-    </div>
-  </div>
-);
+// Skeleton Loader Component - Removed unused component
 
-// Main content component that contains all the JSX
-const MainContent = ({
-  yBg,
-  yText,
-  opacity,
-}: {
-  yBg: any;
-  yText: any;
-  opacity: any;
-}) => {
-  const featuredPackages = [
+// Types
+interface PackageType {
+  id: number;
+  title: string;
+  description: string;
+  price: number;
+  originalPrice: number;
+  rating: number;
+  reviews: number;
+  image: string;
+  duration: string;
+  location: string;
+  category: string;
+}
+
+interface MainContentProps {
+  yBg: MotionValue<number>;
+  yText: MotionValue<number>;
+  mousePosition?: { x: number; y: number };
+}
+
+const MainContent: React.FC<MainContentProps> = ({ yBg, yText, mousePosition = { x: 0, y: 0 } }) => {
+  // Define all necessary data
+  const featuredPackages: PackageType[] = [
     {
       id: 1,
-      title: "Gangtok & Tsomgo Lake Adventure",
-      description: "Explore Sikkim's capital and the sacred high-altitude lake with stunning mountain views",
-      price: 12999,
-      originalPrice: 16999,
+      title: "Sikkim Explorer",
+      description: "Discover the hidden gems of Sikkim with our comprehensive tour package",
+      price: 24999,
+      originalPrice: 29999,
       rating: 4.8,
-      reviews: 234,
-      image: "photo-1472396961693-142e6e269027",
-      duration: "4 days",
-      location: "Gangtok, East Sikkim",
+      reviews: 124,
+      image: "photo-1503614472-8c60a59b3c06",
+      duration: "7 Days",
+      location: "Gangtok, Sikkim",
       category: "Adventure"
     },
     {
       id: 2,
-      title: "North Sikkim Yumthang Valley",
-      description: "Experience the Valley of Flowers and zero point with breathtaking Himalayan landscapes",
+      title: "Himalayan Trekking",
+      description: "Experience the majestic Himalayas with our guided trekking expeditions",
       price: 18999,
-      originalPrice: 24999,
+      originalPrice: 22999,
       rating: 4.9,
-      reviews: 187,
-      image: "photo-1509316975850-ff9c5deb0cd9",
-      duration: "6 days",
-      location: "Lachung, North Sikkim",
-      category: "Nature"
+      reviews: 98,
+      image: "photo-1503614472-8c60a59b3c06",
+      duration: "5 Days",
+      location: "Lachung, Sikkim",
+      category: "Trekking"
     },
     {
       id: 3,
-      title: "Pelling Kanchenjunga View Trek",
-      description: "Witness the world's third highest peak and explore ancient monasteries in West Sikkim",
+      title: "Cultural Heritage Tour",
+      description: "Immerse yourself in the rich culture and heritage of Sikkim",
       price: 15999,
       originalPrice: 19999,
       rating: 4.7,
-      reviews: 312,
-      image: "photo-1469474968028-56623f02e42e",
-      duration: "5 days",
-      location: "Pelling, West Sikkim",
-      category: "Trekking"
+      reviews: 87,
+      image: "photo-1503614472-8c60a59b3c06",
+      duration: "4 Days",
+      location: "Pelling, Sikkim",
+      category: "Cultural"
     }
   ];
 
   const features = [
     {
-      icon: Shield,
-      title: "Trusted Local Partners",
-      description: "All our Sikkim partners are verified and trusted by thousands of travelers"
-    },
-    {
-      icon: Zap,
-      title: "Instant Booking",
-      description: "Book your perfect Sikkim trip in seconds with our streamlined process"
-    },
-    {
-      icon: Users,
+      icon: Globe,
       title: "24/7 Local Support",
       description: "Round-the-clock customer support with local Sikkim expertise"
     },
     {
-      icon: Heart,
+      icon: Calendar,
+      title: "Flexible Cancellation",
+      description: "Easy cancellation and rescheduling options for your convenience"
+    },
+    {
+      icon: MapPin,
+      title: "Off-the-Beaten-Path",
+      description: "Discover hidden gems and local experiences beyond tourist spots"
+    },
+    {
+      icon: Star,
       title: "Authentic Experiences",
       description: "Hand-picked accommodations and packages for authentic Sikkim experiences"
     }
@@ -116,6 +110,15 @@ const MainContent = ({
     { label: "Success Rate", value: "99.8%", icon: TrendingUp }
   ];
 
+  // Parallax styles
+  const sectionStyle = {
+    backgroundPositionY: `${yBg.get()}%`,
+  };
+
+  const textStyle = {
+    transform: `translateY(${yText.get()}%)`,
+  };
+
   return (
     <div className="min-h-screen bg-white dark:bg-gray-900 overflow-x-hidden">
       <Navbar />
@@ -124,7 +127,7 @@ const MainContent = ({
       <section className="relative min-h-screen flex items-center justify-center overflow-hidden">
         {/* Parallax Background - Buddha Park Sikkim */}
         <motion.div 
-          style={{ y: yBg }}
+          style={sectionStyle}
           className="absolute inset-0 z-0"
         >
           <div 
@@ -142,23 +145,23 @@ const MainContent = ({
         <div className="absolute inset-0 z-10 overflow-hidden">
           <motion.div 
             style={{
-              x: mousePosition.x,
-              y: mousePosition.y,
+              x: mousePosition?.x ?? 0,
+              y: mousePosition?.y ?? 0,
             }}
             className="absolute top-1/4 left-1/4 w-32 h-32 bg-blue-500/10 rounded-full blur-xl animate-float"
           />
           <motion.div 
             style={{
-              x: -mousePosition.x,
-              y: -mousePosition.y,
+              x: -(mousePosition?.x ?? 0),
+              y: -(mousePosition?.y ?? 0),
               animationDelay: '2s'
             }}
             className="absolute top-3/4 right-1/4 w-24 h-24 bg-green-500/10 rounded-full blur-lg animate-float"
           />
           <motion.div 
             style={{
-              x: mousePosition.y,
-              y: mousePosition.x,
+              x: mousePosition?.y ?? 0,
+              y: mousePosition?.x ?? 0,
               animationDelay: '4s'
             }}
             className="absolute top-1/2 left-3/4 w-16 h-16 bg-purple-500/10 rounded-full blur-md animate-float"
@@ -167,7 +170,7 @@ const MainContent = ({
 
         {/* Hero Content */}
         <motion.div 
-          style={{ y: yText, opacity }}
+          style={textStyle}
           className="relative z-30 text-center px-4 sm:px-6 lg:px-8 max-w-6xl mx-auto"
         >
           <motion.div
@@ -183,7 +186,7 @@ const MainContent = ({
                 transition={{ delay: 0.2, duration: 0.8 }}
                 className="flex items-center justify-center mb-6"
               >
-                <Sparkles className="h-12 w-12 text-yellow-400 mr-4 animate-pulse" />
+                <Mountain className="h-12 w-12 text-yellow-400 mr-4 animate-pulse" />
                 <h1 className="text-6xl md:text-8xl font-bold bg-gradient-to-r from-yellow-400 via-orange-400 to-red-400 bg-clip-text text-transparent">
                   Sikkim
                 </h1>
@@ -306,7 +309,7 @@ const MainContent = ({
 
       {/* Featured Packages with Parallax */}
       <motion.section 
-        style={{ y: useTransform(scrollY, [800, 1800], [100, -100]) }}
+        style={{ y: 0 }}
         className="py-20 bg-gradient-to-r from-orange-50 to-red-50 dark:from-orange-950/20 dark:to-red-950/20 relative z-10"
       >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -338,11 +341,16 @@ const MainContent = ({
               >
                 <Card className="overflow-hidden glass-morphism shadow-2xl hover:shadow-3xl transition-all duration-500 hover-lift">
                   <div className="relative overflow-hidden">
-                    <img
-                      src={`https://images.unsplash.com/${pkg.image}?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80`}
-                      alt={pkg.title}
-                      className="w-full h-52 object-cover group-hover:scale-110 transition-transform duration-700"
-                    />
+                    <div className="relative w-full h-52">
+                      <Image
+                        src={`https://images.unsplash.com/${pkg.image}?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80`}
+                        alt={pkg.title}
+                        fill
+                        sizes="(max-width: 768px) 100vw, 800px"
+                        className="object-cover group-hover:scale-110 transition-transform duration-700"
+                        priority
+                      />
+                    </div>
                     <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
                     <Badge className="absolute top-4 left-4 bg-gradient-to-r from-orange-600 to-red-600 text-white border-0">
                       {pkg.category}
@@ -489,7 +497,7 @@ const MainContent = ({
             {[
               { title: "Travel Packages", description: "Complete Sikkim experiences with guided tours, activities, and local accommodations", icon: Mountain, gradient: "from-green-400 to-blue-500", link: "/packages" },
               { title: "Premium Hotels", description: "Premium hotels and resorts with stunning Himalayan views and modern amenities", icon: MapPin, gradient: "from-purple-400 to-pink-500", link: "/hotels" },
-              { title: "Authentic Homestays", description: "Authentic local experiences with Sikkimese families and traditional hospitality", icon: Coffee, gradient: "from-orange-400 to-red-500", link: "/homestays" }
+              { title: "Authentic Homestays", description: "Authentic local experiences with Sikkimese families and traditional hospitality", icon: Users, gradient: "from-orange-400 to-red-500", link: "/homestays" }
             ].map((category, index) => (
               <motion.div
                 key={index}
@@ -528,82 +536,6 @@ const MainContent = ({
   );
 };
 
-const Index = () => {
-  const router = useRouter();
-  const { data: session, status } = useSession();
-  const [isLoading, setIsLoading] = useState(true);
-  const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
-  const { scrollY } = useScroll();
-  const yBg = useTransform(scrollY, [0, 1000], [0, -300]);
-  const yText = useTransform(scrollY, [0, 1000], [0, -150]);
-  const opacity = useTransform(scrollY, [0, 300], [1, 0.3]);
-  const animationFrameRef = useRef<number>(0);
-  const lastUpdateRef = useRef<number>(Date.now());
-
-  // Check for existing session and redirect if needed
-  useEffect(() => {
-    if (status === 'loading') return;
-    
-    if (session?.user) {
-      // Determine redirect path based on user role
-      const role = (session.user as any)?.role || 'user';
-      const redirectPath = 
-        role === 'admin' ? '/admin/dashboard' :
-        role === 'partner' ? '/partner/dashboard' :
-        '/dashboard';
-      
-      router.push(redirectPath);
-    } else {
-      setIsLoading(false);
-    }
-  }, [session, status, router]);
-
-  // Mouse move effect for parallax
-  useEffect(() => {
-    const handleMouseMove = (e: MouseEvent) => {
-      const now = Date.now();
-      // Throttle updates to 60fps (16.67ms)
-      if (now - lastUpdateRef.current >= 16.67) {
-        setMousePosition({
-          x: (e.clientX / window.innerWidth - 0.5) * 10,
-          y: (e.clientY / window.innerHeight - 0.5) * 10,
-        });
-        lastUpdateRef.current = now;
-      }
-    };
-
-    // Use requestAnimationFrame for better performance
-    const animate = () => {
-      animationFrameRef.current = requestAnimationFrame(animate);
-    };
-    
-    animationFrameRef.current = requestAnimationFrame(animate);
-    window.addEventListener('mousemove', handleMouseMove, { passive: true });
-    
-    return () => {
-      if (animationFrameRef.current) {
-        cancelAnimationFrame(animationFrameRef.current);
-      }
-      window.removeEventListener('mousemove', handleMouseMove);
-    };
-  }, []);
-
-  // Show skeleton loader while checking session
-  if (isLoading || status === 'loading') {
-    return <SkeletonLoader />;
-  }
-
-  return (
-    <MainContent 
-      mousePosition={mousePosition}
-      yBg={yBg}
-      yText={yText}
-      opacity={opacity}
-      scrollY={scrollY}
-    />
-  );
-};
-
 const Home = () => {
   const router = useRouter();
   const { data: session, status } = useSession();
@@ -613,9 +545,9 @@ const Home = () => {
     offset: ["start start", "end start"]
   });
 
-  const yBg = useTransform(scrollYProgress, [0, 1], ["0%", "50%"]);
-  const yText = useTransform(scrollYProgress, [0, 1], ["0%", "100%"]);
-  const opacity = useTransform(scrollYProgress, [0, 0.5], [1, 0]);
+  // Create motion values for parallax effects
+  const yBg = useTransform(scrollYProgress, [0, 1], [0, -50]);
+  const yText = useTransform(scrollYProgress, [0, 1], [0, -100]);
 
   // Redirect to dashboard if already authenticated
   useEffect(() => {
@@ -639,13 +571,16 @@ const Home = () => {
   }
 
   return (
-    <div ref={containerRef} className="min-h-screen overflow-y-auto">
+    <motion.div className="min-h-screen">
       <Navbar />
       <main>
-        <MainContent yBg={yBg} yText={yText} opacity={opacity} />
+        <MainContent 
+          yBg={yBg}
+          yText={yText}
+        />
       </main>
       <Footer />
-    </div>
+    </motion.div>
   );
 };
 

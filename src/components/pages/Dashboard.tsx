@@ -4,21 +4,21 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useAuth } from "@/contexts/AuthContext";
-import { useNavigate } from "react-router-dom";
+import { useRouter } from "next/navigation";
 import { Building, Package, AlertCircle, Plus, Calendar, Heart } from "lucide-react";
 
 const Dashboard = () => {
   const { user } = useAuth();
-  const navigate = useNavigate();
+  const router = useRouter();
   const [activeTab, setActiveTab] = useState("overview");
 
   // Redirect if not logged in
   useEffect(() => {
     if (!user) {
-      navigate("/login");
+      router.push("/login");
       return;
     }
-  }, [user, navigate]);
+  }, [user, router]);
 
   // Role-specific stats
   const stats = {
@@ -73,8 +73,7 @@ const Dashboard = () => {
     ]
   };
 
-  // Get role-specific stats
-  const currentStats = stats[user?.role as keyof typeof stats] || stats.user;
+  // Get role-specific tabs configuration
   const currentTabs = tabConfig[user?.role as keyof typeof tabConfig] || tabConfig.user;
 
   // Role-specific header content
