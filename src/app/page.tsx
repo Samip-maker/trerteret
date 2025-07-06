@@ -13,8 +13,8 @@ const SearchSection = dynamic(() => import("@/components/SearchSection").then(mo
   loading: () => <div className="py-16 bg-gray-50 animate-pulse">
     <div className="max-w-6xl mx-auto px-4">
       <div className="h-64 bg-gray-200 rounded-lg"></div>
-    </div>
-  </div>
+        </div>
+            </div>
 });
 
 const FeaturesSection = dynamic(() => import("@/components/FeaturesSection").then(mod => ({ default: mod.FeaturesSection })), {
@@ -24,10 +24,10 @@ const FeaturesSection = dynamic(() => import("@/components/FeaturesSection").the
       <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
         {[...Array(4)].map((_, i) => (
           <div key={i} className="h-48 bg-gray-200 rounded-lg"></div>
-        ))}
-      </div>
-    </div>
-  </div>
+            ))}
+          </div>
+                    </div>
+                  </div>
 });
 
 const FeaturedDestinations = dynamic(() => import("@/components/FeaturedDestinations").then(mod => ({ default: mod.FeaturedDestinations })), {
@@ -38,9 +38,9 @@ const FeaturedDestinations = dynamic(() => import("@/components/FeaturedDestinat
         {[...Array(3)].map((_, i) => (
           <div key={i} className="h-64 bg-gray-200 rounded-lg"></div>
         ))}
-      </div>
-    </div>
-  </div>
+                        </div>
+                      </div>
+                    </div>
 });
 
 const PopularPackages = dynamic(() => import("@/components/PopularPackages").then(mod => ({ default: mod.PopularPackages })), {
@@ -51,9 +51,9 @@ const PopularPackages = dynamic(() => import("@/components/PopularPackages").the
         {[...Array(3)].map((_, i) => (
           <div key={i} className="h-80 bg-gray-200 rounded-lg"></div>
         ))}
-      </div>
-    </div>
-  </div>
+                        </div>
+                        </div>
+                      </div>
 });
 
 const Testimonials = dynamic(() => import("@/components/Testimonials").then(mod => ({ default: mod.Testimonials })), {
@@ -64,9 +64,9 @@ const Testimonials = dynamic(() => import("@/components/Testimonials").then(mod 
         {[...Array(2)].map((_, i) => (
           <div key={i} className="h-48 bg-gray-200 rounded-lg"></div>
         ))}
-      </div>
-    </div>
-  </div>
+                        </div>
+                      </div>
+                    </div>
 });
 
 // Server-side data fetching
@@ -120,7 +120,7 @@ export default async function Home() {
                 <div key={i} className="h-48 bg-gray-200 rounded-lg"></div>
               ))}
             </div>
-          </div>
+        </div>
         </div>}>
           <FeaturesSection />
         </Suspense>
@@ -131,9 +131,9 @@ export default async function Home() {
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
               {[...Array(3)].map((_, i) => (
                 <div key={i} className="h-64 bg-gray-200 rounded-lg"></div>
-              ))}
-            </div>
+            ))}
           </div>
+        </div>
         </div>}>
           <FeaturedDestinations destinations={destinations} />
         </Suspense>
@@ -141,12 +141,12 @@ export default async function Home() {
         <Suspense fallback={<div className="py-20 bg-white animate-pulse">
           <div className="max-w-7xl mx-auto px-4">
             <div className="h-32 bg-gray-200 rounded-lg mb-8"></div>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
               {[...Array(3)].map((_, i) => (
                 <div key={i} className="h-80 bg-gray-200 rounded-lg"></div>
               ))}
-            </div>
-          </div>
+                      </div>
+                    </div>
         </div>}>
           <PopularPackages packages={packages} />
         </Suspense>
@@ -157,15 +157,15 @@ export default async function Home() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
               {[...Array(2)].map((_, i) => (
                 <div key={i} className="h-48 bg-gray-200 rounded-lg"></div>
-              ))}
-            </div>
+            ))}
           </div>
+        </div>
         </div>}>
           <Testimonials testimonials={testimonials} />
         </Suspense>
-        
-        <Footer />
-      </div>
+
+      <Footer />
     </div>
-  );
-}
+      </div>
+    );
+  }

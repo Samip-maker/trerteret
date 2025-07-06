@@ -40,7 +40,7 @@ const LoginForm = () => {
   };
 
   return (
-    <div className="h-screen relative overflow-hidden bg-gradient-to-br from-blue-900 via-purple-900 to-emerald-900">
+    <div className="min-h-screen relative overflow-hidden bg-gradient-to-br from-blue-900 via-purple-900 to-emerald-900">
       {/* Animated Background */}
       <div className="absolute inset-0">
         {/* Mountain Layers with Parallax */}
@@ -77,7 +77,7 @@ const LoginForm = () => {
         ))}
       </div>
 
-      <div className="relative z-10 min-h-screen flex items-center justify-center p-4">
+      <div className="relative z-10 py-12 flex items-center justify-center p-4">
         <div className="w-full max-w-6xl grid lg:grid-cols-5 gap-6 lg:gap-8 items-center">
           {/* Login Form - Left Side on desktop, top on mobile */}
           <div className="lg:col-span-2 animate-slide-up order-2 lg:order-1">
