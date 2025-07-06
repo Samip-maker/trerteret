@@ -64,7 +64,7 @@ const OTPInput: React.FC<OTPInputProps> = ({ value, onChange, disabled, error, s
             autoComplete="one-time-code"
             pattern="[0-9]*"
             maxLength={1}
-            ref={el => (refs.current[i] = el)}
+            ref={el => { refs.current[i] = el; }}
             value={value[i] || ''}
             onChange={e => handleChange(i, e.target.value)}
             onKeyDown={e => handleKeyDown(i, e)}

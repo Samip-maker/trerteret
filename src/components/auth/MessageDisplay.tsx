@@ -16,10 +16,12 @@ const icons = {
 
 const MessageDisplay: React.FC<MessageDisplayProps> = ({ message, type = 'info', onClose }) => {
   useEffect(() => {
-    if (!message || onClose) return;
+    if (!message) return;
+    
     const timer = setTimeout(() => {
       if (onClose) onClose();
     }, 4000);
+    
     return () => clearTimeout(timer);
   }, [message, onClose]);
 

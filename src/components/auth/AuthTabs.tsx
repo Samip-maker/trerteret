@@ -22,7 +22,6 @@ const AuthTabs: React.FC<AuthTabsProps> = ({ mode, setMode }) => {
               ? 'text-emerald-600'
               : 'text-gray-400 hover:text-emerald-400'
           }`}
-          aria-selected={mode === tab.value}
           aria-controls={`auth-panel-${tab.value}`}
           tabIndex={mode === tab.value ? 0 : -1}
           onClick={() => setMode(tab.value as 'sign-in' | 'sign-up')}

@@ -224,7 +224,7 @@ const SignupForm = () => {
               <div className="absolute inset-0 bg-gradient-to-br from-emerald-500/20 to-blue-500/20 backdrop-blur-sm"></div>
               <div className="absolute inset-0 flex items-center justify-center p-8 text-center">
                 <div className="max-w-md">
-                  <h2 className="text-2xl sm:text-3xl font-bold text-white mb-4">Discover Sikkim's Hidden Gems</h2>
+                  <h2 className="text-2xl sm:text-3xl font-bold text-white mb-4">Discover Sikkim&apos;s Hidden Gems</h2>
                   <p className="text-white/80 text-sm sm:text-base">
                     Join our community of travelers and unlock exclusive deals, personalized recommendations, and seamless trip planning for your next Sikkim adventure.
                   </p>

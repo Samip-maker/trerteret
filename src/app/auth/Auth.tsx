@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { InputOTP, InputOTPGroup, InputOTPSlot } from "@/components/ui/input-otp";
-import { User, Mail, Lock, Eye, EyeOff, ArrowRight, CheckCircle, AlertCircle } from "lucide-react";
+import { User, Mail, Lock, ArrowRight, CheckCircle, AlertCircle } from "lucide-react";
 
 const Auth = () => {
   const [isSignIn, setIsSignIn] = useState(true);
@@ -16,7 +16,6 @@ const Auth = () => {
     confirmPassword: ''
   });
   const [isLoading, setIsLoading] = useState(false);
-  const [showPassword, setShowPassword] = useState(false);
 
   // Email validation function
   const isValidEmail = (email: string) => {

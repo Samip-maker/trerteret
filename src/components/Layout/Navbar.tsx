@@ -1,49 +1,10 @@
 "use client";
 
-import React, { useState } from 'react';
+import React from 'react';
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
-import { useSession, signOut } from 'next-auth/react';
 import { Button } from "@/components/ui/button";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { 
-  Menu, 
-  X, 
-  User, 
-  Settings, 
-  LogOut, 
-  Bell,
-  Search,
-  Globe
-} from "lucide-react";
 
 const Navbar = () => {
-  const { data: session } = useSession();
-  const pathname = usePathname();
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-
-  const navigation = [
-    { name: 'Dashboard', href: '/dashboard' },
-    { name: 'Packages', href: '/packages' },
-    { name: 'Profile', href: '/profile' },
-  ];
-
-  const isActive = (href: string) => {
-    return pathname === href;
-  };
-
-  const handleSignOut = () => {
-    signOut({ callbackUrl: '/' });
-  };
-
   return (
     <nav className="bg-white border-b border-gray-200">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">

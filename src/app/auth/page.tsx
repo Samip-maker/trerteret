@@ -3,7 +3,6 @@ import React, { useMemo } from "react";
 import AuthCard from "@/components/auth/AuthCard";
 import AuthForm from "@/components/auth/AuthForm";
 import Image from "next/image";
-import { ShieldCheck, Clock, Gift } from "lucide-react";
 
 const heroImages = [
   "/auth-hero-1.jpg",
