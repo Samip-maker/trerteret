@@ -139,9 +139,9 @@ export async function POST(request: NextRequest) {
       updatedAt?: Date;
     }
     
-    // Explicitly ignore password field using void operator
-    const { password, ...userData } = user as UserData;
-    void password; // Explicitly mark as intentionally unused
+    // Extract user data without the password
+    const { password: userPassword, ...userData } = user as UserData;
+    void userPassword; // Explicitly mark as intentionally unused
     
     return NextResponse.json({
       success: true,
