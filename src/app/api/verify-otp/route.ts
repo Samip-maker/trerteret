@@ -128,7 +128,20 @@ export async function POST(request: NextRequest) {
     }
 
     // Return success response with user data (excluding sensitive info)
-    const { password: _, ...userData } = user as any;
+    interface UserData {
+      _id: any;
+      email: string;
+      name: string;
+      role: string;
+      emailVerified: Date;
+      password?: string;
+      createdAt?: Date;
+      updatedAt?: Date;
+    }
+    
+    // Explicitly ignore password field using void operator
+    const { password, ...userData } = user as UserData;
+    void password; // Explicitly mark as intentionally unused
     
     return NextResponse.json({
       success: true,
