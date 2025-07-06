@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { connectToDatabase } from '@/lib/mongodb';
 import { OTPService } from '@/lib/otp';
+import { ObjectId } from 'mongodb';
 
 function isValidOTP(otp: string): boolean {
   return /^\d{6}$/.test(otp);
@@ -129,7 +130,7 @@ export async function POST(request: NextRequest) {
 
     // Return success response with user data (excluding sensitive info)
     interface UserData {
-      _id: any;
+      _id: ObjectId | string;
       email: string;
       name: string;
       role: string;
