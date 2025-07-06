@@ -45,7 +45,7 @@ export async function POST(request: Request) {
       );
     }
 
-    const { email, recaptchaToken } = body;
+    const { email } = body;
     
     // Quick validation without regex object creation
     if (!email?.length || !EMAIL_REGEX.test(email)) {
@@ -60,21 +60,7 @@ export async function POST(request: Request) {
       );
     }
 
-    // Skip recaptcha in development for faster testing
-    if (process.env.NODE_ENV === 'production') {
-      if (!recaptchaToken) {
-        return NextResponse.json(
-          { 
-            success: false, 
-            message: 'reCAPTCHA verification required',
-            errorCode: 'RECAPTCHA_REQUIRED'
-          },
-          { status: 400 }
-        );
-      }
-      
-      // TODO: Add actual recaptcha verification here if needed
-    }
+    // reCAPTCHA verification has been removed
 
     const result = await OTPService.sendOTP(email);
     
