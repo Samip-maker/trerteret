@@ -66,12 +66,16 @@ export async function POST(request: Request) {
       message: 'User registered successfully',
       user: userObj,
     });
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Error in signup:', error);
+    let message = 'Internal server error';
+    if (error && typeof error === 'object' && 'message' in error && typeof (error as Record<string, unknown>).message === 'string') {
+      message = (error as Record<string, unknown>).message as string;
+    }
     return NextResponse.json(
       { 
         success: false, 
-        message: error.message || 'Internal server error',
+        message,
         errorCode: 'INTERNAL_SERVER_ERROR'
       },
       { status: 500 }

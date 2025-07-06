@@ -6,7 +6,6 @@ import { SessionProvider } from 'next-auth/react';
 import { TooltipProvider } from '@/components/ui/tooltip';
 import { AuthProvider } from '@/contexts/AuthContext';
 import { Session } from 'next-auth';
-import { useState } from 'react';
 
 const queryClient = new QueryClient({
   defaultOptions: {

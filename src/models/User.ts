@@ -1,12 +1,6 @@
 import mongoose from 'mongoose';
 
-const userSchema = new mongoose.Schema(
-  {
-    employeeId: {
-      type: String,
-      unique: true,
-      sparse: true, // This allows multiple null values for employeeId
-    },
+const userSchema = new mongoose.Schema({
     name: {
       type: String,
       required: [true, 'Name is required'],

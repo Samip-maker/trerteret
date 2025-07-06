@@ -3,6 +3,7 @@
 import { useSession } from "next-auth/react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import Link from "next/link";
 
 export default function TestPage() {
   const { data: session, status } = useSession();
@@ -36,19 +37,19 @@ export default function TestPage() {
               <h3 className="font-semibold">Quick Navigation:</h3>
               <div className="flex flex-wrap gap-2">
                 <Button asChild size="sm">
-                  <a href="/">Home</a>
+                  <Link href="/">Home</Link>
                 </Button>
                 <Button asChild size="sm">
-                  <a href="/dashboard">Dashboard</a>
+                  <Link href="/dashboard">Dashboard</Link>
                 </Button>
                 <Button asChild size="sm">
-                  <a href="/login">Login</a>
+                  <Link href="/login">Login</Link>
                 </Button>
                 <Button asChild size="sm">
-                  <a href="/signup">Signup</a>
+                  <Link href="/signup">Signup</Link>
                 </Button>
                 <Button asChild size="sm">
-                  <a href="/packages">Packages</a>
+                  <Link href="/packages">Packages</Link>
                 </Button>
               </div>
             </div>

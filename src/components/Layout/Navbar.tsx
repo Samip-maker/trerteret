@@ -1,334 +1,228 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
-import { signOut, useSession } from "next-auth/react";
+import React, { useState } from 'react';
+import Link from 'next/link';
+import { usePathname } from 'next/navigation';
+import { useSession, signOut } from 'next-auth/react';
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Search, Menu, X, User, Bell, LogOut, HelpCircle, Package, Home, MapPin, Phone, Mail } from "lucide-react";
-
-import { Badge } from "@/components/ui/badge";
-import { ThemeToggle } from "@/components/theme-toggle";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
-
+  DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-
-// User type from next-auth
-type User = {
-  name?: string | null;
-  email?: string | null;
-  image?: string | null;
-  role?: string;
-};
+import { 
+  Menu, 
+  X, 
+  User, 
+  Settings, 
+  LogOut, 
+  Bell,
+  Search,
+  Globe
+} from "lucide-react";
 
 const Navbar = () => {
-  const [isOpen, setIsOpen] = useState(false);
-  const [searchQuery, setSearchQuery] = useState("");
-  const [isScrolled, setIsScrolled] = useState(false);
-  const router = useRouter();
-  const pathname = usePathname();
   const { data: session } = useSession();
-  const user = session?.user as User | undefined;
+  const pathname = usePathname();
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
-  useEffect(() => {
-    const handleScroll = () => {
-      setIsScrolled(window.scrollY > 20);
-    };
-    window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, []);
-
-  const navigationItems = [
-    { 
-      name: "Travel Packages", 
-      href: "/packages", 
-      icon: Package,
-      description: "Curated Sikkim adventures"
-    },
-    { 
-      name: "Hotels & Stays", 
-      href: "/hotels", 
-      icon: Home,
-      description: "Premium accommodations"
-    },
+  const navigation = [
+    { name: 'Dashboard', href: '/dashboard' },
+    { name: 'Packages', href: '/packages' },
+    { name: 'Profile', href: '/profile' },
   ];
 
-  const handleSearch = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (searchQuery.trim()) {
-      router.push(`/packages?search=${encodeURIComponent(searchQuery)}`);
-      setSearchQuery("");
-    }
+  const isActive = (href: string) => {
+    return pathname === href;
   };
 
-  const isActive = (path: string) => pathname === path;
-
-  const handleLogout = async () => {
-    await signOut({ redirect: false });
-    router.push('/');
+  const handleSignOut = () => {
+    signOut({ callbackUrl: '/' });
   };
 
   return (
-    <nav className={`fixed top-0 w-full z-50 transition-all duration-300 ${
-      isScrolled 
-        ? 'bg-white/95 dark:bg-gray-900/95 backdrop-blur-lg shadow-lg border-b border-gray-200/50 dark:border-gray-700/50' 
-        : 'bg-white dark:bg-gray-900 shadow-sm border-b border-gray-200 dark:border-gray-700'
-    }`}>
+    <nav className="bg-white border-b border-gray-200">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between items-center h-16">
-          {/* Logo */}
-          <Link 
-            href="/" 
-            className="flex items-center space-x-3 group hover:scale-105 transition-all duration-200"
-          >
-            <div className="relative">
-              <MapPin className="h-8 w-8 text-green-600 dark:text-green-400 group-hover:text-green-700 dark:group-hover:text-green-300 transition-colors" />
-              <div className="absolute -inset-1 bg-green-600/20 rounded-full blur opacity-0 group-hover:opacity-100 transition-opacity duration-200"></div>
-            </div>
-            <div className="flex flex-col">
-              <span className="text-xl font-bold text-gray-900 dark:text-white group-hover:text-green-600 dark:group-hover:text-green-400 transition-colors">
-                Sikkim Trails
-              </span>
-              <span className="text-xs text-gray-600 dark:text-gray-400 -mt-1">
-                Mystic Splendor
-              </span>
-            </div>
-          </Link>
-
-          {/* Desktop Navigation */}
-          <div className="hidden lg:flex items-center space-x-1">
-            {navigationItems.map((item) => (
-              <Link
-                key={item.name}
-                href={item.href}
-                className={`group relative flex items-center space-x-2 px-4 py-2 rounded-xl transition-all duration-200 hover:bg-gray-100 dark:hover:bg-gray-800 ${
-                  isActive(item.href) 
-                    ? 'bg-green-50 dark:bg-green-900/30 text-green-700 dark:text-green-300' 
-                    : 'text-gray-700 dark:text-gray-300 hover:text-green-600 dark:hover:text-green-400'
-                }`}
-              >
-                <item.icon className="h-4 w-4" />
-                <div className="flex flex-col">
-                  <span className="font-medium text-sm">{item.name}</span>
-                  <span className="text-xs text-gray-500 dark:text-gray-400 opacity-0 group-hover:opacity-100 transition-opacity">
-                    {item.description}
-                  </span>
-                </div>
-                {isActive(item.href) && (
-                  <div className="absolute bottom-0 left-1/2 transform -translate-x-1/2 w-1 h-1 bg-green-600 dark:bg-green-400 rounded-full"></div>
-                )}
-              </Link>
-            ))}
-          </div>
-
-          {/* Search Bar */}
-          <div className="hidden md:flex flex-1 max-w-md mx-8">
-            <form onSubmit={handleSearch} className="relative w-full group">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 dark:text-gray-500 h-4 w-4 group-focus-within:text-green-600 dark:group-focus-within:text-green-400 transition-colors" />
-              <Input
-                type="text"
-                placeholder="Search destinations, packages..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-10 pr-4 bg-gray-50 dark:bg-gray-800 border-gray-200 dark:border-gray-700 focus:bg-white dark:focus:bg-gray-900 focus:border-green-500 dark:focus:border-green-400 focus:ring-green-500/20 dark:focus:ring-green-400/20 transition-all duration-200 rounded-xl text-gray-900 dark:text-white placeholder:text-gray-500 dark:placeholder:text-gray-400"
-              />
-            </form>
-          </div>
-
-          {/* Desktop Actions */}
-          <div className="hidden md:flex items-center space-x-3">
-            <ThemeToggle />
-            
-            {/* Notifications */}
-            <Link 
-              href="/notifications" 
-              className="relative p-2 text-gray-600 dark:text-gray-400 hover:text-green-600 dark:hover:text-green-400 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-xl transition-all duration-200 group"
-            >
-              <Bell className="h-5 w-5" />
-              <Badge className="absolute -top-1 -right-1 h-5 w-5 flex items-center justify-center bg-red-500 hover:bg-red-500 text-white text-xs animate-pulse">
-                3
-              </Badge>
-              <div className="absolute -inset-1 bg-green-600/20 rounded-xl blur opacity-0 group-hover:opacity-100 transition-opacity duration-200"></div>
+        <div className="flex justify-between h-16">
+          {/* Logo and main navigation */}
+          <div className="flex items-center">
+            <Link href="/" className="flex items-center space-x-2">
+              <Globe className="h-8 w-8 text-blue-600" />
+              <span className="text-xl font-bold text-gray-900">Turbo Travels</span>
             </Link>
             
-            {user ? (
-              // Profile menu
+            {/* Desktop navigation */}
+            <div className="hidden md:ml-10 md:flex md:space-x-8">
+              {navigation.map((item) => (
+                <Link
+                  key={item.name}
+                  href={item.href}
+                  className={`inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium ${
+                    isActive(item.href)
+                      ? 'border-blue-500 text-gray-900'
+                      : 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700'
+                  }`}
+                >
+                  {item.name}
+                </Link>
+              ))}
+            </div>
+          </div>
+
+          {/* Right side - search, notifications, user menu */}
+          <div className="flex items-center space-x-4">
+            {/* Search */}
+            <div className="hidden md:flex items-center space-x-2">
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+                <input
+                  type="text"
+                  placeholder="Search packages..."
+                  className="pl-10 pr-4 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                />
+              </div>
+            </div>
+
+            {/* Notifications */}
+            <Button variant="ghost" size="sm" className="relative">
+              <Bell className="h-5 w-5" />
+              <span className="absolute -top-1 -right-1 h-3 w-3 bg-red-500 rounded-full"></span>
+            </Button>
+
+            {/* User menu */}
+            {session?.user ? (
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button className="relative h-10 w-10 p-0 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-800 group" variant="ghost">
-                    <User className="h-5 w-5 text-gray-600 dark:text-gray-400" />
-                    <div className="absolute -inset-1 bg-green-600/20 rounded-xl blur opacity-0 group-hover:opacity-100 transition-opacity duration-200"></div>
+                  <Button variant="ghost" className="relative h-8 w-8 rounded-full">
+                    <Avatar className="h-8 w-8">
+                      <AvatarImage src={session.user.image || ''} alt={session.user.name || ''} />
+                      <AvatarFallback>
+                        {session.user.name?.charAt(0) || 'U'}
+                      </AvatarFallback>
+                    </Avatar>
                   </Button>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent className="w-64 bg-white/95 dark:bg-gray-900/95 backdrop-blur-sm border border-gray-200/40 dark:border-gray-700/40 rounded-xl shadow-xl" align="end" forceMount>
-                  <div className="px-4 py-3 border-b border-gray-200 dark:border-gray-700">
-                    <p className="text-sm font-medium text-gray-900 dark:text-gray-100">Welcome back!</p>
-                    <p className="text-xs text-gray-500 dark:text-gray-400">{user?.email}</p>
-                  </div>
-                  
-                  <DropdownMenuItem asChild>
-                    <Link href="/profile" className="flex items-center space-x-3 px-4 py-3 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
-                      <User className="h-4 w-4 text-gray-500 dark:text-gray-400" />
-                      <div>
-                        <span className="font-medium text-gray-900 dark:text-gray-100">My Profile</span>
-                        <p className="text-xs text-gray-500 dark:text-gray-400">Personal information</p>
-                      </div>
-                    </Link>
-                  </DropdownMenuItem>
-                  
-                  <DropdownMenuItem asChild>
-                    <Link href="/profile" className="flex items-center space-x-3 px-4 py-3 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
-                      <Package className="h-4 w-4 text-gray-500 dark:text-gray-400" />
-                      <div>
-                        <span className="font-medium text-gray-900 dark:text-gray-100">My Bookings</span>
-                        <p className="text-xs text-gray-500 dark:text-gray-400">View trip history</p>
-                      </div>
-                    </Link>
-                  </DropdownMenuItem>
-                  
-                  <DropdownMenuItem asChild>
-                    <Link href="/profile" className="flex items-center space-x-3 px-4 py-3 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
-                      <HelpCircle className="h-4 w-4 text-gray-500 dark:text-gray-400" />
-                      <div>
-                        <span className="font-medium text-gray-900 dark:text-gray-100">Help & Support</span>
-                        <p className="text-xs text-gray-500 dark:text-gray-400">Get assistance</p>
-                      </div>
-                    </Link>
-                  </DropdownMenuItem>
-                  
+                <DropdownMenuContent className="w-56" align="end" forceMount>
+                  <DropdownMenuLabel className="font-normal">
+                    <div className="flex flex-col space-y-1">
+                      <p className="text-sm font-medium leading-none">{session.user.name}</p>
+                      <p className="text-xs leading-none text-muted-foreground">
+                        {session.user.email}
+                      </p>
+                    </div>
+                  </DropdownMenuLabel>
                   <DropdownMenuSeparator />
-                  
-                  <DropdownMenuItem className="flex items-center space-x-3 px-4 py-3 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950 transition-colors" onClick={handleLogout}>
-                    <LogOut className="h-4 w-4" />
-                    <span className="font-medium">Sign Out</span>
+                  <DropdownMenuItem asChild>
+                    <Link href="/profile" className="flex items-center">
+                      <User className="mr-2 h-4 w-4" />
+                      Profile
+                    </Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem asChild>
+                    <Link href="/settings" className="flex items-center">
+                      <Settings className="mr-2 h-4 w-4" />
+                      Settings
+                    </Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem onClick={handleSignOut}>
+                    <LogOut className="mr-2 h-4 w-4" />
+                    Sign out
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
             ) : (
-              // Get Started Button
-              <div className="ml-2 pl-2 border-l border-gray-200 dark:border-gray-700">
-                <Button
-                  className="rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700"
-                  onClick={() => router.push("/signup")}
-                >
-                  Get Started
+              <div className="flex space-x-2">
+                <Button variant="outline" asChild>
+                  <Link href="/login">Sign in</Link>
+                </Button>
+                <Button asChild>
+                  <Link href="/signup">Sign up</Link>
                 </Button>
               </div>
             )}
-          </div>
 
-          {/* Mobile menu button */}
-          <div className="md:hidden flex items-center space-x-2">
-            <ThemeToggle />
-            <Button
-              onClick={() => setIsOpen(!isOpen)}
-              className="p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-xl text-gray-700 dark:text-gray-300 bg-transparent h-10 w-10"
-            >
-              {isOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
-            </Button>
+            {/* Mobile menu button */}
+            <div className="md:hidden">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+              >
+                {isMobileMenuOpen ? (
+                  <X className="h-6 w-6" />
+                ) : (
+                  <Menu className="h-6 w-6" />
+                )}
+              </Button>
+            </div>
           </div>
         </div>
+      </div>
 
-        {/* Mobile Navigation */}
-        {isOpen && (
-          <div className="md:hidden py-4 border-t border-gray-200 dark:border-gray-700 animate-fade-in bg-white/95 dark:bg-gray-900/95 backdrop-blur-sm">
-            <div className="space-y-4">
-              {/* Mobile Search */}
-              <form onSubmit={handleSearch} className="relative">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 dark:text-gray-500 h-4 w-4" />
-                <Input
-                  type="text"
-                  placeholder="Search destinations..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="pl-10 bg-gray-50 dark:bg-gray-800 rounded-xl text-gray-900 dark:text-white placeholder:text-gray-500 dark:placeholder:text-gray-400 border-gray-200 dark:border-gray-700"
-                />
-              </form>
-
-              {/* Mobile Navigation Items */}
-              <div className="space-y-2">
-                {navigationItems.map((item) => (
-                  <Link
-                    key={item.name}
-                    href={item.href}
-                    className={`flex items-center space-x-3 py-3 px-4 rounded-xl transition-all duration-200 ${
-                      isActive(item.href)
-                        ? 'bg-green-50 dark:bg-green-900/30 text-green-700 dark:text-green-300'
-                        : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800'
-                    }`}
-                    onClick={() => setIsOpen(false)}
-                  >
-                    <item.icon className="h-5 w-5" />
-                    <div>
-                      <span className="font-medium">{item.name}</span>
-                      <p className="text-xs text-gray-500 dark:text-gray-400">{item.description}</p>
-                    </div>
-                  </Link>
-                ))}
-                
-                <Link
-                  href="/notifications"
-                  className="flex items-center space-x-3 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 py-3 px-4 rounded-xl transition-all duration-200"
-                  onClick={() => setIsOpen(false)}
-                >
-                  <Button className="w-full rounded-xl text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 justify-start h-12 bg-transparent">
-                    <Bell className="h-5 w-5" />
-                    <span className="font-medium">Notifications</span>
-                    <Badge className="ml-auto bg-red-500 text-white text-xs">3</Badge>
-                  </Button>
-                </Link>
-                
-                <Link
-                  href="/profile"
-                  className="flex items-center space-x-3 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 py-3 px-4 rounded-xl transition-all duration-200"
-                  onClick={() => setIsOpen(false)}
-                >
-                  <Button className="w-full rounded-xl text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 justify-start h-12 bg-transparent">
-                    <User className="h-5 w-5" />
-                    <span className="font-medium">My Profile</span>
-                  </Button>
-                </Link>
-              </div>
-
-              {/* Mobile Get Started Button */}
-              <div className="pt-4 border-t border-gray-200 dark:border-gray-700">
-                <Button
-                  className="w-full rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700"
-                  onClick={() => router.push("/signup")}
-                >
-                  Get Started
-                </Button>
-              </div>
-
-              {/* Mobile Contact Info */}
-              <div className="pt-4 border-t border-gray-200 dark:border-gray-700">
-                <div className="space-y-2 text-sm text-gray-600 dark:text-gray-400">
-                  <div className="flex items-center space-x-2">
-                    <Phone className="h-4 w-4" />
-                    <span>+91 98765 43210</span>
+      {/* Mobile menu */}
+      {isMobileMenuOpen && (
+        <div className="md:hidden">
+          <div className="px-2 pt-2 pb-3 space-y-1 sm:px-3 bg-white border-t">
+            {navigation.map((item) => (
+              <Link
+                key={item.name}
+                href={item.href}
+                className={`block px-3 py-2 rounded-md text-base font-medium ${
+                  isActive(item.href)
+                    ? 'bg-blue-50 text-blue-700'
+                    : 'text-gray-700 hover:bg-gray-50 hover:text-gray-900'
+                }`}
+                onClick={() => setIsMobileMenuOpen(false)}
+              >
+                {item.name}
+              </Link>
+            ))}
+            <div className="pt-4 pb-3 border-t border-gray-200">
+              <div className="flex items-center px-4">
+                <Avatar className="h-10 w-10">
+                  <AvatarImage src={session?.user?.image || ''} alt={session?.user?.name || ''} />
+                  <AvatarFallback>
+                    {session?.user?.name?.charAt(0) || 'U'}
+                  </AvatarFallback>
+                </Avatar>
+                <div className="ml-3">
+                  <div className="text-base font-medium text-gray-800">
+                    {session?.user?.name || 'User'}
                   </div>
-                  <div className="flex items-center space-x-2">
-                    <Mail className="h-4 w-4" />
-                    <span>hello@sikkimtrails.com</span>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <MapPin className="h-4 w-4" />
-                    <span>Gangtok, Sikkim</span>
+                  <div className="text-sm font-medium text-gray-500">
+                    {session?.user?.email || 'user@example.com'}
                   </div>
                 </div>
               </div>
+              <div className="mt-3 space-y-1">
+                <Link
+                  href="/profile"
+                  className="block px-4 py-2 text-base font-medium text-gray-500 hover:text-gray-800 hover:bg-gray-100"
+                  onClick={() => setIsMobileMenuOpen(false)}
+                >
+                  Profile
+                </Link>
+                <button
+                  onClick={() => {
+                    handleSignOut();
+                    setIsMobileMenuOpen(false);
+                  }}
+                  className="block w-full text-left px-4 py-2 text-base font-medium text-gray-500 hover:text-gray-800 hover:bg-gray-100"
+                >
+                  Sign out
+                </button>
+              </div>
             </div>
           </div>
-        )}
-      </div>
+        </div>
+      )}
     </nav>
   );
 };
 
-export default Navbar;
+export default Navbar; 

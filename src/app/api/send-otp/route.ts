@@ -95,13 +95,16 @@ export async function POST(request: Request) {
       message: 'Verification code sent'
     });
 
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Error in send-otp:', error);
-    
+    let message = 'An unexpected error occurred';
+    if (error && typeof error === 'object' && 'message' in error && typeof (error as Record<string, unknown>).message === 'string') {
+      message = (error as Record<string, unknown>).message as string;
+    }
     return NextResponse.json(
       { 
         success: false, 
-        message: 'An unexpected error occurred',
+        message,
         errorCode: 'INTERNAL_SERVER_ERROR'
       },
       { status: 500 }

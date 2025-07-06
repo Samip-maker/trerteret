@@ -2,14 +2,15 @@
 "use client";
 
 import React from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
+import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { ThemeToggle } from "@/components/ui/theme-toggle";
 import { Search, MapPin, Calendar, Users, Star, Plane, Hotel, Car, Camera, TrendingUp, Award, Globe } from "lucide-react";
 import { motion } from "framer-motion";
-import { Link } from 'react-router-dom';
+import Link from 'next/link';
 
 const Index = () => {
   const popularDestinations = [
@@ -75,10 +76,10 @@ const Index = () => {
               <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Sikkim Trails</h1>
             </div>
             <nav className="hidden md:flex items-center space-x-8">
-              <Link to="/packages" className="text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 transition-colors">Packages</Link>
-              <Link to="/hotels" className="text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 transition-colors">Hotels</Link>
-              <Link to="/flights" className="text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 transition-colors">Flights</Link>
-              <Link to="/login" className="text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 transition-colors">Login</Link>
+              <Link href="/packages" className="text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 transition-colors">Packages</Link>
+              <Link href="/hotels" className="text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 transition-colors">Hotels</Link>
+              <Link href="/flights" className="text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 transition-colors">Flights</Link>
+              <Link href="/login" className="text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 transition-colors">Login</Link>
               <ThemeToggle />
             </nav>
           </div>
@@ -124,14 +125,14 @@ const Index = () => {
                   <div className="relative">
                     <Users className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-5 w-5" />
                     <Input placeholder="Guests" className="pl-10 h-12 bg-white dark:bg-gray-700 border-gray-200 dark:border-gray-600" />
-                  </div>
+              </div>
                   <Button className="h-12 bg-gradient-to-r from-blue-600 to-green-600 hover:from-blue-700 hover:to-green-700 text-white font-semibold">
                     <Search className="h-5 w-5 mr-2" />
                     Search
-                  </Button>
+              </Button>
                 </div>
-              </CardContent>
-            </Card>
+            </CardContent>
+          </Card>
           </motion.div>
         </div>
 
@@ -162,11 +163,11 @@ const Index = () => {
                 <CardContent className="p-6 text-center">
                   <div className={`w-16 h-16 mx-auto mb-4 rounded-full bg-${item.color}-100 dark:bg-${item.color}-900 flex items-center justify-center group-hover:scale-110 transition-transform duration-300`}>
                     <item.icon className={`h-8 w-8 text-${item.color}-600 dark:text-${item.color}-400`} />
-                  </div>
+              </div>
                   <h3 className="text-lg font-semibold text-gray-900 dark:text-white">{item.title}</h3>
                   <p className="text-gray-600 dark:text-gray-400">{item.desc}</p>
-                </CardContent>
-              </Card>
+            </CardContent>
+          </Card>
             ))}
           </motion.div>
         </div>
@@ -197,11 +198,15 @@ const Index = () => {
               >
                 <Card className="group overflow-hidden hover:shadow-2xl transition-all duration-500 bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700">
                   <div className="relative h-64 overflow-hidden">
-                    <img 
-                      src={destination.image} 
-                      alt={destination.name}
-                      className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
-                    />
+                    <div className="relative w-full h-full">
+                      <Image 
+                        src={destination.image} 
+                        alt={destination.name}
+                        fill
+                        sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+                        className="object-cover group-hover:scale-110 transition-transform duration-500"
+                      />
+                    </div>
                     <div className="absolute top-4 right-4">
                       <Badge className="bg-white/90 text-gray-900">{destination.packages} packages</Badge>
                     </div>
@@ -213,13 +218,13 @@ const Index = () => {
                         <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
                         <span className="text-sm font-medium text-gray-900 dark:text-white">{destination.rating}</span>
                       </div>
-                    </div>
+              </div>
                     <p className="text-2xl font-bold text-green-600 dark:text-green-400">Starting from {destination.price}</p>
                     <Button className="w-full mt-4 bg-gradient-to-r from-blue-600 to-green-600 hover:from-blue-700 hover:to-green-700 text-white">
                       Explore Packages
-                    </Button>
-                  </CardContent>
-                </Card>
+              </Button>
+            </CardContent>
+          </Card>
               </motion.div>
             ))}
           </div>
@@ -238,7 +243,7 @@ const Index = () => {
           >
             <div>
               <h2 className="text-4xl font-bold text-gray-900 dark:text-white mb-4">Trending Packages</h2>
-              <p className="text-gray-600 dark:text-gray-400">Hot deals that everyone's booking</p>
+              <p className="text-gray-600 dark:text-gray-400">Hot deals that everyone&apos;s booking</p>
             </div>
             <div className="flex items-center space-x-2 text-green-600 dark:text-green-400">
               <TrendingUp className="h-5 w-5" />
@@ -258,10 +263,12 @@ const Index = () => {
                 <Card className="group overflow-hidden hover:shadow-2xl transition-all duration-500 bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700">
                   <div className="md:flex">
                     <div className="relative md:w-1/2 h-64 md:h-auto overflow-hidden">
-                      <img 
+                      <Image 
                         src={pkg.image} 
                         alt={pkg.title}
-                        className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                        fill
+                        sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+                        className="object-cover rounded-t-lg"
                       />
                       <Badge className="absolute top-4 left-4 bg-red-500 text-white">{pkg.badge}</Badge>
                     </div>
@@ -282,10 +289,10 @@ const Index = () => {
                       </div>
                       <Button className="w-full bg-gradient-to-r from-blue-600 to-green-600 hover:from-blue-700 hover:to-green-700 text-white">
                         Book Now
-                      </Button>
+              </Button>
                     </div>
                   </div>
-                </Card>
+          </Card>
               </motion.div>
             ))}
           </div>
@@ -327,8 +334,8 @@ const Index = () => {
                 <p className="text-blue-100">{feature.desc}</p>
               </motion.div>
             ))}
-          </div>
         </div>
+      </div>
       </section>
     </div>
   );

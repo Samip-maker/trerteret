@@ -99,22 +99,35 @@ export async function POST(request: NextRequest) {
       },
     });
     
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Error in verify-otp:', error);
-    
+    let message = 'An unexpected error occurred. Please try again.';
+    let name = '';
+    let code = '';
+    if (error && typeof error === 'object') {
+      const errObj = error as Record<string, unknown>;
+      if ('message' in errObj && typeof errObj.message === 'string') {
+        message = errObj.message;
+      }
+      if ('name' in errObj && typeof errObj.name === 'string') {
+        name = errObj.name;
+      }
+      if ('code' in errObj && typeof errObj.code === 'string') {
+        code = errObj.code;
+      }
+    }
     // Handle database connection errors
-    if (error.name === 'MongoNetworkError' || error.code === 'ECONNREFUSED') {
+    if (name === 'MongoNetworkError' || code === 'ECONNREFUSED') {
       return NextResponse.json({
         success: false,
         message: 'Database connection error. Please try again later.',
         errorCode: 'DATABASE_ERROR'
       }, { status: 503 });
     }
-    
     // Default error response
     return NextResponse.json({
       success: false,
-      message: 'An unexpected error occurred. Please try again.',
+      message,
       errorCode: 'INTERNAL_SERVER_ERROR'
     }, { status: 500 });
   }
